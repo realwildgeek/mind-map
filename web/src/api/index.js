@@ -1,136 +1,54 @@
-import exampleData from 'simple-mind-map/example/exampleData'
-import { simpleDeepClone } from 'simple-mind-map/src/utils/index'
-import Vue from 'vue'
-import vuexStore from '@/store'
+// web/src/api/index.js
+// 目前先写死一个固定的脑图 ID 用于跑通测试，后续可以动态传入
+const API_URL = '/api/map/my-first-map';
 
-const SIMPLE_MIND_MAP_DATA = 'SIMPLE_MIND_MAP_DATA'
-const SIMPLE_MIND_MAP_CONFIG = 'SIMPLE_MIND_MAP_CONFIG'
-const SIMPLE_MIND_MAP_LANG = 'SIMPLE_MIND_MAP_LANG'
-const SIMPLE_MIND_MAP_LOCAL_CONFIG = 'SIMPLE_MIND_MAP_LOCAL_CONFIG'
-
-let mindMapData = null
-
-// 获取缓存的思维导图数据
-export const getData = () => {
-  // 接管模式
-  if (window.takeOverApp) {
-    mindMapData = window.takeOverAppMethods.getMindMapData()
-    return mindMapData
-  }
-  // 操作本地文件模式
-  if (vuexStore.state.isHandleLocalFile) {
-    return Vue.prototype.getCurrentData()
-  }
-  let store = localStorage.getItem(SIMPLE_MIND_MAP_DATA)
-  if (store === null) {
-    return simpleDeepClone(exampleData)
-  } else {
-    try {
-      return JSON.parse(store)
-    } catch (error) {
-      return simpleDeepClone(exampleData)
-    }
-  }
-}
-
-// 存储思维导图数据
-export const storeData = data => {
+// 从 R2 获取数据
+export const getData = async () => {
   try {
-    let originData = null
-    if (window.takeOverApp) {
-      originData = mindMapData
-    } else {
-      originData = getData()
+    const res = await fetch(API_URL);
+    if (res.ok) {
+      return await res.json();
     }
-    if (!originData) {
-      originData = {}
+    console.warn('R2 无数据或报错，将使用默认空白节点');
+    return null;
+  } catch (error) {
+    console.error('获取 R2 数据失败', error);
+    return null;
+  }
+};
+
+// 存储数据到 R2
+export const storeData = async (data) => {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      console.log('数据已静默同步至 R2');
     }
-    originData = {
-      ...originData,
-      ...data
-    }
-    if (window.takeOverApp) {
-      mindMapData = originData
-      window.takeOverAppMethods.saveMindMapData(originData)
-      return
-    }
-    Vue.prototype.$bus.$emit('write_local_file', originData)
-    if (vuexStore.state.isHandleLocalFile) {
-      return
-    }
-    localStorage.setItem(SIMPLE_MIND_MAP_DATA, JSON.stringify(originData))
+  } catch (error) {
+    console.error('同步至 R2 失败', error);
+  }
+};
+
+// 官方 UI 还会保存一些界面的本地配置（如侧边栏是否展开、当前选择的语言等）
+// 这部分配置不需要上云，我们保留其原生的 localStorage 逻辑
+export const storeConfig = (config) => {
+  try {
+    window.localStorage.setItem('simpleMindMapConfig', JSON.stringify(config))
   } catch (error) {
     console.log(error)
-    if ('exceeded') {
-      Vue.prototype.$bus.$emit('localStorageExceeded')
-    }
   }
 }
 
-// 获取思维导图配置数据
 export const getConfig = () => {
-  if (window.takeOverApp) {
-    window.takeOverAppMethods.getMindMapConfig()
-    return
-  }
-  let config = localStorage.getItem(SIMPLE_MIND_MAP_CONFIG)
-  if (config) {
-    return JSON.parse(config)
-  }
-  return null
-}
-
-// 存储思维导图配置数据
-export const storeConfig = config => {
   try {
-    if (window.takeOverApp) {
-      window.takeOverAppMethods.saveMindMapConfig(config)
-      return
-    }
-    localStorage.setItem(SIMPLE_MIND_MAP_CONFIG, JSON.stringify(config))
+    const res = window.localStorage.getItem('simpleMindMapConfig')
+    return res ? JSON.parse(res) : null
   } catch (error) {
     console.log(error)
+    return null
   }
-}
-
-// 存储语言
-export const storeLang = lang => {
-  if (window.takeOverApp) {
-    window.takeOverAppMethods.saveLanguage(lang)
-    return
-  }
-  localStorage.setItem(SIMPLE_MIND_MAP_LANG, lang)
-}
-
-// 获取存储的语言
-export const getLang = () => {
-  if (window.takeOverApp) {
-    return window.takeOverAppMethods.getLanguage() || 'zh'
-  }
-  let lang = localStorage.getItem(SIMPLE_MIND_MAP_LANG)
-  if (lang) {
-    return lang
-  }
-  storeLang('zh')
-  return 'zh'
-}
-
-// 存储本地配置
-export const storeLocalConfig = config => {
-  if (window.takeOverApp) {
-    return window.takeOverAppMethods.saveLocalConfig(config)
-  }
-  localStorage.setItem(SIMPLE_MIND_MAP_LOCAL_CONFIG, JSON.stringify(config))
-}
-
-// 获取本地配置
-export const getLocalConfig = () => {
-  if (window.takeOverApp) {
-    return window.takeOverAppMethods.getLocalConfig()
-  }
-  let config = localStorage.getItem(SIMPLE_MIND_MAP_LOCAL_CONFIG)
-  if (config) {
-    return JSON.parse(config)
-  }
-  return null
 }
