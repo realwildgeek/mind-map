@@ -227,10 +227,10 @@ export default {
       }
     }
   },
-  mounted() {
+  async mounted() { // <-- 加上 async
     showLoading()
-    this.getData()
-    this.init()
+    await this.getData() // <-- 加上 await，强行在此等待数据加载完毕
+    this.init() // 等数据彻底准备好，再初始化引擎
     this.$bus.$on('execCommand', this.execCommand)
     this.$bus.$on('paddingChange', this.onPaddingChange)
     this.$bus.$on('export', this.export)
@@ -307,8 +307,9 @@ export default {
     },
 
     // 获取思维导图数据，实际应该调接口获取
-    getData() {
-      this.mindMapData = getData()
+    async getData() { // <-- 加上 async
+      // 加上 await，等真正的网络请求返回后再赋值给 mindMapData
+      this.mindMapData = await getData() 
       this.mindMapConfig = getConfig() || {}
     },
 
