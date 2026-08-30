@@ -12,6 +12,8 @@ const SIMPLE_MIND_MAP_LOCAL_CONFIG = 'SIMPLE_MIND_MAP_LOCAL_CONFIG'
 const API_URL = '/api/map/my-first-map'
 
 let mindMapData = null
+// 【新增核心】：在内存中维护一份完整的脑图数据状态（相当于你的 State）
+let cloudDataCache = null
 
 // 获取缓存的思维导图数据 (修改为从 R2 异步获取)
 export const getData = async () => {
@@ -30,14 +32,17 @@ export const getData = async () => {
     const res = await fetch(API_URL)
     if (res.ok) {
       const data = await res.json()
-      return data || simpleDeepClone(exampleData)
+      // 拿到云端数据后，立刻存入内存缓存
+      cloudDataCache = data || simpleDeepClone(exampleData)
+      return cloudDataCache
     }
   } catch (error) {
     console.error('从 R2 获取数据失败，使用默认模板', error)
   }
   
-  // 如果 R2 获取失败或没数据，返回作者原版的默认数据
-  return simpleDeepClone(exampleData)
+  // 兜底：如果 R2 为空，用默认模板初始化缓存
+  cloudDataCache = simpleDeepClone(exampleData)
+  return cloudDataCache
 }
 
 // 存储思维导图数据 (修改为向 R2 推送)
@@ -48,6 +53,11 @@ export const storeData = async (data) => {
     if (window.takeOverApp) {
       originData = mindMapData
     } else {
+      // 【关键修复】：不再直接覆写，而是从内存缓存中拿出完整的旧数据（包含 theme, layout 等）
+      originData = cloudDataCache || simpleDeepClone(exampleData)
+    }
+
+    if (!originData) {
       // 因为 getData 现在是异步的，这里直接使用传入的 data 进行合并
       // 在实际保存时，传入的 data 通常已经是完整的脑图数据树
       originData = data || {} 
@@ -57,6 +67,9 @@ export const storeData = async (data) => {
       ...originData,
       ...data
     }
+
+    // 更新内存缓存，保持状态最新
+    cloudDataCache = originData
 
     if (window.takeOverApp) {
       mindMapData = originData
