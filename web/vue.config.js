@@ -16,14 +16,7 @@ module.exports = {
     config.plugins.delete('preload')
     // 移除 prefetch 插件
     config.plugins.delete('prefetch')
-    // 支持运行时设置public path
-    if (!isDev) {
-      config
-        .plugin('dynamicPublicPathPlugin')
-        .use(WebpackDynamicPublicPathPlugin, [
-          { externalPublicPath: 'window.externalPublicPath' }
-        ])
-    }
+    
     // 给插入html页面内的js和css添加hash参数
     if (!isLibrary) {
       config.plugin('html').tap(args => {
