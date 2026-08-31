@@ -19,6 +19,7 @@ let cloudDataCache = null
 // 🌐 【核心强注释】：维护云端多文件与全局索引状态
 let currentFileId = new URLSearchParams(window.location.search).get('id') || null
 let globalFilesCache = []
+let globalTagsCache = [] // 新增
 
 // 格式化时间工具
 const getFormattedTime = () => {
@@ -69,6 +70,7 @@ export const getData = async () => {
     // 1. 同步拉取云端大厅 KV 索引（为后续保存/列表提供数据基座）
     const { files } = await fetchCloudList()
     globalFilesCache = files || []
+    globalTagsCache = tags || [] // <--- 新增这行，把标签树也存到内存里
 
     // 2. 解析网址 ID，定向爆破拉取 R2 真身并解密
     if (currentFileId) {
@@ -199,3 +201,84 @@ export const getLocalConfig = () => {
   let config = localStorage.getItem(SIMPLE_MIND_MAP_LOCAL_CONFIG);
   return config ? JSON.parse(config) : null;
 };
+
+// =======================================================
+// ☁️ 极客灵动岛交互与文件大厅粘合剂 (零侵入 DOM 绑定)
+// =======================================================
+import { renderFileHallUI } from '@/core/ui.js'
+import { TagManager } from '@/core/tags.js'
+import { deleteNote, updateCloudTags } from '@/core/storage.js'
+import { logout } from '@/core/auth.js'
+
+let tagManagerInstance = null
+
+// 因为 Vue 打包异步加载，我们需要确保 DOM 渲染完毕后再绑事件
+setTimeout(() => {
+  // 1. 绑定 [新建终端]
+  document.getElementById('menu-btn-new-note')?.addEventListener('click', () => {
+    // 直接剥离 URL 参数重新加载页面，触发无 ID 初始化逻辑
+    window.location.href = '/'
+  })
+
+  // 2. 绑定 [文件大厅]
+  document.getElementById('menu-btn-hall')?.addEventListener('click', () => {
+    document.getElementById('island-menu').parentElement.classList.remove('active') // 收起灵动岛
+    document.getElementById('fileBrowserModal').classList.add('active')
+    document.querySelector('.modal-sidebar').classList.add('tags-collapsed')
+
+    // 实例化/刷新标签管理器与大厅 UI
+    if (!tagManagerInstance) {
+      tagManagerInstance = new TagManager('tag-sidebar-list', globalTagsCache, async (newTags) => {
+        globalTagsCache = newTags
+        await updateCloudTags(newTags) // 标签变动自动推流至 KV
+        refreshHallUI('all')
+      })
+    }
+    refreshHallUI('all')
+  })
+
+  // 3. 渲染大厅的核心逻辑
+  function refreshHallUI(activeTagId = 'all') {
+    renderFileHallUI(
+      globalFilesCache, 
+      globalTagsCache, 
+      activeTagId,
+      (fileId) => { 
+        // 击中文件，直接带着新 ID 重新加载页面
+        window.location.href = `/?id=${fileId}`
+      },
+      async (fileId) => { 
+        // 击中垃圾桶，执行物理销毁
+        if (confirm("⚠️ 确认在云端彻底抹除该脑图？此操作不可逆！")) {
+          globalFilesCache = globalFilesCache.filter(f => f.id !== fileId)
+          await deleteNote(fileId, globalFilesCache)
+          refreshHallUI(activeTagId)
+        }
+      }
+    )
+  }
+
+  // 绑定：关闭大厅模态框
+  document.getElementById('btn-close-modal')?.addEventListener('click', () => {
+    document.getElementById('fileBrowserModal').classList.remove('active')
+  })
+
+  // 4. 绑定 [安全同步] (手动保存)
+  document.getElementById('menu-btn-save')?.addEventListener('click', () => {
+    document.getElementById('island-menu').parentElement.classList.remove('active')
+    // 强制调用合并保存逻辑
+    storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
+    document.getElementById('status-bar').innerText = '✅ 手动安全同步完成'
+  })
+
+  // 5. 绑定 [物理拔线] (退出登录)
+  document.getElementById('btn-logout')?.addEventListener('click', () => {
+    logout()
+  })
+
+  // 6. 绑定 [独立加密] (占位预留)
+  document.getElementById('btn-file-encrypt')?.addEventListener('click', () => {
+    alert('🔐 独立加密功能已预留，敬请期待！')
+  })
+
+}, 1000) // 延迟 1 秒确保 index.html 的灵动岛已就位
