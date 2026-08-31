@@ -10,6 +10,14 @@
     <link rel="icon" href="dist/logo.ico" />
     <title>思绪思维导图</title>
     <link rel="stylesheet" href="<%= BASE_URL %>style.css">
+    <!-- 拖拽功能 Polyfill -->
+    <link rel="stylesheet" href="<%= BASE_URL %>default.css">
+    <script src="<%= BASE_URL %>index.min.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            MobileDragDrop.polyfill({ holdToDrag: 300 }); 
+        });
+    </script>
     <script>
       // 自定义静态资源的路径
       window.externalPublicPath = './dist/'
