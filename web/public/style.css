@@ -1,0 +1,143 @@
+/* ==========================================
+   🎨 1. 主题色彩调度中心 (Variables Switchboard)
+   ========================================== */
+:root {
+    --bg-body: #ffffff;
+    --bg-sidebar: #f7f9fa;
+    --bg-panel: #f6f8fa;
+    --bg-hover: #eef1f2;
+    --bg-input: #ffffff;
+    --border-light: #eef1f2;
+    --border-medium: #dcdfe6;
+    --border-dark: #d0d7de;
+    --text-main: #1a1a1a;
+    --text-secondary: #303133;
+    --text-muted: #8b949e;
+    --color-accent: #1f6feb; 
+}
+
+[data-theme="dark"], body.isDark { /* 兼容脑图自带的暗黑类名 isDark */
+    --bg-body: #262a2e;       
+    --bg-sidebar: #1e2226;    
+    --bg-panel: #363b3f;      
+    --bg-hover: #484f58;      
+    --bg-input: #363b3f;
+    --border-light: hsla(0, 0%, 100%, 0.1);
+    --border-medium: #484f58;
+    --border-dark: #484f58;
+    --text-main: hsla(0, 0%, 100%, 0.9);     
+    --text-secondary: hsla(0, 0%, 100%, 0.6);
+    --text-muted: hsla(0, 0%, 100%, 0.4);
+    --color-accent: #409eff;  
+}
+
+/* ==========================================
+   🗂️ 2. 文件大厅与模态框 (File Hall & Modals)
+   ========================================== */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(2px); z-index: 99999;
+    display: none; justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 0.2s;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
+}
+.modal-overlay.active { display: flex; opacity: 1; }
+.modal-content {
+    width: 80%; height: 80%; background: var(--bg-body); border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    display: flex; flex-direction: column; overflow: hidden;
+    transform: scale(0.95); transition: transform 0.2s;
+}
+.modal-overlay.active .modal-content { transform: scale(1); }
+.modal-header {
+    height: 50px; border-bottom: 1px solid var(--border-light); display: flex;
+    justify-content: space-between; align-items: center; padding: 0 20px;
+}
+.modal-title { font-size: 16px; font-weight: bold; color: var(--text-main); }
+.btn-close { font-size: 24px; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+.btn-close:hover { color: #f85149; }
+.modal-body { display: flex; flex: 1; height: calc(100% - 50px); }
+
+.modal-sidebar { width: 25%; background: var(--bg-sidebar); border-right: 1px solid var(--border-light); box-sizing: border-box; }
+.modal-main { width: 75%; background: var(--bg-body); padding: 24px; overflow-y: auto; box-sizing: border-box; }
+
+/* 标签系统 */
+.tag-parent { margin-bottom: 2px; }
+.tag-item {
+    display: flex; align-items: center; padding: 6px 10px; border-radius: 6px; 
+    cursor: pointer; font-size: 13px; color: var(--text-secondary); transition: background 0.2s;
+}
+.tag-item:hover { background-color: var(--bg-hover); }
+.tag-item.active { background-color: rgba(64, 158, 255, 0.1); color: var(--color-accent); font-weight: bold; }
+.tag-item:hover .tag-actions { opacity: 1; }
+.tag-children { padding-left: 20px; }
+.tag-color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+.tag-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+.tag-actions { opacity: 0; font-size: 12px; transition: opacity 0.2s; padding: 2px; }
+.tag-actions:hover { color: #2ea043; }
+
+/* 文件网格 */
+.file-grid { display: flex; flex-direction: column; gap: 0; }
+.file-card {
+    display: flex; align-items: center; padding: 10px 16px; cursor: pointer;
+    border-bottom: 1px solid var(--border-light); transition: background 0.2s;
+}
+.file-card:hover { background-color: var(--bg-hover); }
+.file-card:last-child { border-bottom: none; }
+.file-card-icon { font-size: 20px; margin-right: 12px; }
+.file-card-name { font-size: 14px; font-weight: 500; color: var(--text-main); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px;}
+.file-card-time { font-size: 13px; color: var(--text-muted); width: 150px; text-align: right; }
+.file-card-delete {
+    width: 40px; text-align: center; font-size: 16px; color: var(--text-muted); opacity: 0; 
+    transition: opacity 0.2s, color 0.2s; cursor: pointer;
+}
+.file-card:hover .file-card-delete { opacity: 0.6; }
+.file-card-delete:hover { opacity: 1 !important; color: #f85149 !important; }
+
+/* 拖拽效果 */
+.tag-item { position: relative; transition: background 0.2s, opacity 0.2s; }
+.tag-item.dragging { opacity: 0.4; background: var(--border-light); }
+.tag-item.drop-before::before { content: ''; position: absolute; top: -2px; left: 0; right: 0; height: 2px; background: var(--color-accent); z-index: 10; border-radius: 2px; }
+.tag-item.drop-after::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: var(--color-accent); z-index: 10; border-radius: 2px; }
+.tag-item.drop-inside { background: rgba(64, 158, 255, 0.1) !important; box-shadow: inset 0 0 0 1px var(--color-accent); }
+
+/* 分组标题与搜索 */
+.file-group-header {
+    font-size: 14px; font-weight: 600; color: var(--text-main); margin: 24px 0 12px 0; 
+    display: flex; justify-content: space-between; align-items: center; 
+    border-bottom: 1px solid var(--border-light); padding-bottom: 4px;
+}
+.file-group-header:first-child { margin-top: 0; }
+.file-group-count { font-size: 12px; color: var(--text-muted); font-weight: normal; }
+
+.file-search-input {
+    width: 100%; box-sizing: border-box; padding: 10px 16px 10px 36px; 
+    border: 1px solid var(--border-medium); border-radius: 8px; font-size: 14px; 
+    outline: none; transition: all 0.2s; color: var(--text-main);
+    background: var(--bg-input) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%239ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 12px center;
+}
+.file-search-input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.1); }
+.inline-tag-container { margin-left: 12px; display: inline-flex; gap: 6px; align-items: center; vertical-align: middle; }
+.inline-tag-pill { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 500; display: inline-block; line-height: 1.2; white-space: nowrap; }
+
+/* ==========================================
+   📱 3. 移动端模态框自适应 (Mobile Modals Only)
+   ========================================== */
+@media (max-width: 768px) {
+    #fileBrowserModal { align-items: flex-end !important; }
+    #fileBrowserModal .modal-content { 
+        width: 100vw !important; height: 100dvh !important; max-height: 100dvh !important; border-radius: 0 !important; margin: 0 !important; 
+        transform: translateY(100%) scale(1) !important; transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    }
+    #fileBrowserModal.active .modal-content { transform: translateY(0) scale(1) !important; }
+    #fileBrowserModal .modal-header { height: auto !important; padding: max(16px, env(safe-area-inset-top)) 20px 16px 20px !important; }
+    #fileBrowserModal .modal-main { padding-bottom: max(20px, env(safe-area-inset-bottom)) !important; }
+    #fileBrowserModal .modal-body { flex-direction: column !important; overflow: hidden !important; }
+    #fileBrowserModal .modal-sidebar { width: 100% !important; max-height: 35vh !important; border-right: none !important; border-bottom: 8px solid var(--bg-panel) !important; overflow-y: auto !important; padding-bottom: 10px !important; }
+    #fileBrowserModal .modal-main { width: 100% !important; flex: 1 !important; padding: 16px !important; overflow-y: auto !important; }
+
+    #view-all-files { display: flex !important; justify-content: space-between !important; align-items: center !important; }
+    #view-all-files::after { content: '▼' !important; font-size: 11px !important; color: var(--text-muted) !important; transition: 0.2s !important; }
+    .modal-sidebar.tags-collapsed #view-all-files::after { transform: rotate(-90deg) !important; }
+    .modal-sidebar.tags-collapsed > div:nth-child(n+2) { display: none !important; }
+}
