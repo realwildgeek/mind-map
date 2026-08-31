@@ -17,11 +17,11 @@ export async function onRequest(context) {
         'Expires': '0'
     };
 
-    // 🛡️ Layer 1: JWT 防线
-    const authHeader = request.headers.get('Authorization');
-    if (authHeader !== 'Bearer temp_token_for_now') {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: apiHeaders });
-    }
+    // 🛡️ Layer 1: JWT 防线（这段代码属于测试代码，已作废，可以永久删除）
+    // const authHeader = request.headers.get('Authorization');
+    // if (authHeader !== 'Bearer temp_token_for_now') {
+    //     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: apiHeaders });
+    // }
 
     try {
         // 🗂️ [GET /api/list] 瞬间拉取全量双键索引
