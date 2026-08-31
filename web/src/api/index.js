@@ -302,4 +302,61 @@ setTimeout(() => {
     }
   })
 
+  // 9. 绑定 [打标签] 桥梁
+  document.getElementById('menu-btn-tag')?.addEventListener('click', () => {
+    if (!currentFileId) {
+      alert('⚠️ 请先点击 💾 保存新建的脑图，再为其分配标签！')
+      return
+    }
+    document.getElementById('island-menu').parentElement.classList.remove('active') // 收起灵动岛
+    
+    const listContainer = document.getElementById('file-tag-list')
+    listContainer.innerHTML = ''
+
+    // 提取当前文件在内存中已有的标签
+    const fileMeta = globalFilesCache.find(f => f.id === currentFileId)
+    const currentFileTags = fileMeta?.tags || []
+
+    if (globalTagsCache.length === 0) {
+        listContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">暂无标签，请先在文件大厅新建标签。</div>'
+    } else {
+        // 动态渲染所有云端标签为复选框
+        globalTagsCache.forEach(tag => {
+          const isChecked = currentFileTags.includes(tag.id) ? 'checked' : ''
+          listContainer.innerHTML += `
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-size: 14px; padding: 4px 0;">
+              <input type="checkbox" value="${tag.id}" class="file-tag-checkbox" ${isChecked} style="cursor: pointer;">
+              <div style="width: 12px; height: 12px; border-radius: 50%; background: ${tag.color};"></div>
+              ${tag.name}
+            </label>
+          `
+        })
+    }
+    document.getElementById('fileTagModal').classList.add('active')
+  })
+
+  // 关闭标签模态框
+  document.getElementById('btn-cancel-file-tag')?.addEventListener('click', () => {
+    document.getElementById('fileTagModal').classList.remove('active')
+  })
+
+  // 保存标签关联并推流
+  document.getElementById('btn-save-file-tag')?.addEventListener('click', async () => {
+    if (!currentFileId) return
+    const checkboxes = document.querySelectorAll('.file-tag-checkbox:checked')
+    const selectedTagIds = Array.from(checkboxes).map(cb => cb.value)
+
+    const fileIndex = globalFilesCache.findIndex(f => f.id === currentFileId)
+    if (fileIndex >= 0) {
+      // 1. 覆盖内存中该文件的标签数组
+      globalFilesCache[fileIndex].tags = selectedTagIds
+      
+      // 2. 强制触发一次云端双轨保存（推流到 KV 索引）
+      storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
+      
+      document.getElementById('status-bar').innerText = '🏷️ 标签分配成功'
+      document.getElementById('fileTagModal').classList.remove('active')
+    }
+  })
+
 }, 1000) // 延迟 1 秒确保 index.html 的灵动岛已就位
