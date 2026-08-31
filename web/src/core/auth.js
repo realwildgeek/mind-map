@@ -4,7 +4,7 @@
 // 🛡️ 架构层级: Core 底层引擎
 // =========================================================================
 
-import { CryptoCore } from './crypto.js';
+import { CryptoCore } from '@/core/crypto';
 
 const ActiveSession = {
     jwt: null,
