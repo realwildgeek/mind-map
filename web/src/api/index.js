@@ -71,7 +71,7 @@ export const getData = async () => {
 
   try {
     // 1. 同步拉取云端大厅 KV 索引（为后续保存/列表提供数据基座）
-    const { files } = await fetchCloudList()
+    const { files, tags } = await fetchCloudList()
     globalFilesCache = files || []
     globalTagsCache = tags || [] // <--- 新增这行，把标签树也存到内存里
 
