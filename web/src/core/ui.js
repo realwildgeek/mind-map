@@ -62,7 +62,7 @@ export function askForTagDetails(manager, existingTag = null) {
 
         titleEl.innerText = existingTag ? '编辑标签' : '新建标签';
         inputName.value = existingTag ? existingTag.name : '';
-        let selectedColor = existingTag ? existingTag.color : PRESET_COLORS;
+        let selectedColor = existingTag ? existingTag.color : PRESET_COLORS[0];
         
         editActions.style.display = existingTag ? 'block' : 'none';
 
