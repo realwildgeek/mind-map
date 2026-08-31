@@ -68,7 +68,7 @@ export async function downloadAndDecrypt(fileId, wrappedKey, customCred) {
     const { masterCredential } = getSession();
     const activeCredential = customCred || masterCredential;
 
-    const data = await apiFetch(`/note/${fileId}`);
+    const data = await apiFetch(`/files/${fileId}`);
     const ciphertextR2 = data.r2Payload;
     
     if (!ciphertextR2) return null;
@@ -102,7 +102,7 @@ export async function encryptAndUpload(fileId, deltaContent, metaInfo, customCre
 
     // 3. 并发双轨推流
     await Promise.all([
-        apiFetch(`/note/${fileId}`, { method: 'PUT', body: JSON.stringify({ r2Payload: ciphertextR2 }) }),
+        apiFetch(`/files/${fileId}`, { method: 'PUT', body: JSON.stringify({ r2Payload: ciphertextR2 }) }),
         apiFetch(`/list`, { method: 'PUT', body: JSON.stringify({ filesCipher: ciphertextKV }) })
     ]);
 
@@ -117,7 +117,7 @@ export async function deleteNote(fileId, newGlobalFilesArray) {
     const ciphertextKV = await CryptoCore.encrypt(JSON.stringify(newGlobalFilesArray), masterCredential);
     
     await Promise.all([
-        apiFetch(`/note/${fileId}`, { method: 'DELETE' }),
+        apiFetch(`/files/${fileId}`, { method: 'DELETE' }),
         apiFetch(`/list`, { method: 'PUT', body: JSON.stringify({ filesCipher: ciphertextKV }) })
     ]);
     return true;
