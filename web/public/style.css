@@ -76,6 +76,18 @@
 .tag-actions { opacity: 0; font-size: 12px; transition: opacity 0.2s; padding: 2px; }
 .tag-actions:hover { color: #2ea043; }
 
+/* 标签颜色块专属装甲 */
+.color-swatch {
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: transform 0.2s, box-shadow 0.2s;
+}
+.color-swatch:hover { transform: scale(1.1); }
+.color-swatch.selected { 
+    border-color: var(--border-dark); 
+    transform: scale(1.15); 
+    box-shadow: 0 0 0 2px var(--bg-body) inset; 
+}
+
 /* 文件网格 */
 .file-grid { display: flex; flex-direction: column; gap: 0; }
 .file-card {
