@@ -49,6 +49,7 @@
         <div class="menu-btn" id="menu-btn-new-note" title="新建终端">📄</div>
         <div class="menu-btn" id="menu-btn-hall" title="文件大厅">🗂️</div>
         <div class="menu-btn" id="menu-btn-save" title="安全同步">💾</div>
+        <div class="menu-btn" id="menu-btn-tag" title="打标签">🏷️</div>
         <div class="menu-btn" id="btn-file-encrypt" title="独立加密">🔐</div>
         <div class="menu-btn" id="btn-logout" title="物理拔线">🚪</div>
       </div>
@@ -221,6 +222,20 @@
                 <div id="btn-delete-tag" style="padding: 12px 0; color: #f85149; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                     <span>🗑️</span> 删除此标签
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 模态框：为当前文件打标签 ================= -->
+    <div class="modal-overlay" id="fileTagModal" style="z-index: 999999;">
+        <div class="modal-content" style="width: 320px; height: max-content; padding: 20px 24px; background: var(--bg-body); overflow: visible;">
+            <div style="font-size: 16px; font-weight: 600; margin-bottom: 20px; color: var(--text-main);">分配标签</div>
+            <div id="file-tag-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 30vh; overflow-y: auto; margin-bottom: 24px;">
+                <!-- 标签复选框会通过 JS 动态注入到这里 -->
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div id="btn-cancel-file-tag" style="cursor:pointer; color: var(--text-muted); font-size: 14px;">取消</div>
+                <div id="btn-save-file-tag" style="cursor:pointer; color: var(--color-accent); font-weight: 600; font-size: 14px;">保存设置</div>
             </div>
         </div>
     </div>
