@@ -5,12 +5,9 @@ import vuexStore from '@/store'
 
 // 🚨 【核心强注释】：引入极客云端底层引擎
 import { getSession, initTripleLayerSecurity } from '@/core/auth.js'
-import { fetchCloudList, downloadAndDecrypt, encryptAndUpload, generateSystemFileId } from '@/core/storage.js'
-import { renderFileHallUI, askForTagDetails } from '@/core/ui.js' // 增加 askForTagDetails
-
-import { renderFileHallUI } from '@/core/ui.js'
+import { fetchCloudList, downloadAndDecrypt, encryptAndUpload, generateSystemFileId, deleteNote, updateCloudTags } from '@/core/storage.js'
+import { renderFileHallUI, askForTagDetails } from '@/core/ui.js'
 import { TagManager } from '@/core/tags.js'
-import { deleteNote, updateCloudTags } from '@/core/storage.js'
 import { logout } from '@/core/auth.js'
 
 const SIMPLE_MIND_MAP_DATA = 'SIMPLE_MIND_MAP_DATA'
