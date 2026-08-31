@@ -1,0 +1,13 @@
+/* ==========================================
+   拖拽修复样式（服务于标签tags模块）
+   ========================================== */
+
+.dnd-poly-drag-image {
+    opacity: .5 !important;
+}
+
+.dnd-poly-drag-image.dnd-poly-snapback {
+    transition-property: transform, -webkit-transform !important;
+    transition-duration: 250ms !important;
+    transition-timing-function: ease-out !important;
+}
