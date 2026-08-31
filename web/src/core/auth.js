@@ -32,6 +32,6 @@ export function getSession() {
 export function logout() {
     ActiveSession.jwt = null;
     ActiveSession.masterCredential = null;
-    // 物理重定向，彻底摧毁当前页面的内存状态
-    window.location.href = 'https://lt.838808.xyz/api/logout';
+    // 直接跳转到相对路径，_middleware.js 会自动拦截它并清理 Cookie
+    window.location.href = '/logout';
 }
