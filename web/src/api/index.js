@@ -8,6 +8,11 @@ import { getSession, initTripleLayerSecurity } from '@/core/auth.js'
 import { fetchCloudList, downloadAndDecrypt, encryptAndUpload, generateSystemFileId } from '@/core/storage.js'
 import { renderFileHallUI, askForTagDetails } from '@/core/ui.js' // 增加 askForTagDetails
 
+import { renderFileHallUI } from '@/core/ui.js'
+import { TagManager } from '@/core/tags.js'
+import { deleteNote, updateCloudTags } from '@/core/storage.js'
+import { logout } from '@/core/auth.js'
+
 const SIMPLE_MIND_MAP_DATA = 'SIMPLE_MIND_MAP_DATA'
 const SIMPLE_MIND_MAP_CONFIG = 'SIMPLE_MIND_MAP_CONFIG'
 const SIMPLE_MIND_MAP_LANG = 'SIMPLE_MIND_MAP_LANG'
@@ -206,11 +211,6 @@ export const getLocalConfig = () => {
 // =======================================================
 // ☁️ 极客灵动岛交互与文件大厅粘合剂 (零侵入 DOM 绑定)
 // =======================================================
-import { renderFileHallUI } from '@/core/ui.js'
-import { TagManager } from '@/core/tags.js'
-import { deleteNote, updateCloudTags } from '@/core/storage.js'
-import { logout } from '@/core/auth.js'
-
 let tagManagerInstance = null
 
 // 因为 Vue 打包异步加载，我们需要确保 DOM 渲染完毕后再绑事件
