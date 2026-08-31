@@ -6,6 +6,7 @@ import vuexStore from '@/store'
 // 🚨 【核心强注释】：引入极客云端底层引擎
 import { getSession, initTripleLayerSecurity } from '@/core/auth.js'
 import { fetchCloudList, downloadAndDecrypt, encryptAndUpload, generateSystemFileId } from '@/core/storage.js'
+import { renderFileHallUI, askForTagDetails } from '@/core/ui.js' // 增加 askForTagDetails
 
 const SIMPLE_MIND_MAP_DATA = 'SIMPLE_MIND_MAP_DATA'
 const SIMPLE_MIND_MAP_CONFIG = 'SIMPLE_MIND_MAP_CONFIG'
@@ -279,6 +280,29 @@ setTimeout(() => {
   // 6. 绑定 [独立加密] (占位预留)
   document.getElementById('btn-file-encrypt')?.addEventListener('click', () => {
     alert('🔐 独立加密功能已预留，敬请期待！')
+  })
+
+  // 7. 绑定 [新建标签]
+  document.getElementById('btn-add-tag')?.addEventListener('click', async () => {
+    const result = await askForTagDetails(tagManagerInstance)
+    if (result && result.action === 'save') { 
+      tagManagerInstance.addTag(result.data.name, result.data.color, result.data.parentId) 
+    }
+  })
+
+  // 8. 监听 [编辑/删除标签] 的全局事件
+  document.addEventListener('tag-edit', async (e) => {
+    const tag = e.detail
+    const result = await askForTagDetails(tagManagerInstance, tag)
+    if (result) {
+      if (result.action === 'save') { 
+        tagManagerInstance.updateTag(tag.id, result.data.name, result.data.color, result.data.parentId) 
+      } else if (result.action === 'delete') {
+        if (confirm(`🗑️ 确定要删除标签 "${tag.name}" 吗？\n删除后无法恢复！`)) {
+          tagManagerInstance.deleteTag(tag.id)
+        }
+      } 
+    }
   })
 
 }, 1000) // 延迟 1 秒确保 index.html 的灵动岛已就位
