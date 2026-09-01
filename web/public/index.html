@@ -39,140 +39,195 @@
     <div id="app"></div>
     <!-- built files will be auto injected -->
 
-    <!-- ================= 极客灵动岛 (零侵入悬浮组件) ================= -->
+    <!-- ================= 极客灵动岛 2.0 (折叠抽屉版) ================= -->
     <div id="geek-island" class="geek-island">
-      <!-- 1. 主控圆点 -->
-      <div id="island-toggle" class="island-toggle">☁️</div>
-      
-      <!-- 2. 隐藏的胶囊菜单 -->
-      <div id="island-menu" class="island-menu">
-        <div class="menu-btn" id="menu-btn-new-note" title="新建终端">📄</div>
-        <div class="menu-btn" id="menu-btn-hall" title="文件大厅">🗂️</div>
-        <div class="menu-btn" id="menu-btn-save" title="安全同步">💾</div>
-        <div class="menu-btn" id="menu-btn-tag" title="打标签">🏷️</div>
-        <div class="menu-btn" id="btn-file-encrypt" title="独立加密">🔐</div>
-        <div class="menu-btn" id="btn-logout" title="物理拔线">🚪</div>
+      <!-- 🔵 总开关与反馈吐司 -->
+      <div class="island-head">
+        <div id="island-toggle" class="action-icon" title="展开/收起">☁️</div>
+        <div id="status-toast" class="status-bar-text">✅ 系统就绪</div>
       </div>
+      
+      <!-- 🟢 主干道 (绿框逻辑，复用暗黑胶囊样式) -->
+      <div id="island-bar" class="island-bar">
+        <!-- 🗂️ 大厅 -->
+        <div class="action-icon" id="btn-main-hall" title="文件大厅">🗂️</div>
+        <!-- 💾 保存 -->
+        <div class="action-icon" id="btn-main-save" title="安全同步">💾</div>
+        
+        <!-- 🏷️ 标签 (挂载红框气泡) -->
+        <div class="nav-tag-wrapper">
+            <div class="action-icon" id="btn-main-tag" title="打标签">🏷️</div>
+            <!-- 复用你原版的下沉菜单样式 -->
+            <div id="popover-tag" class="nav-dropdown-menu" style="left: 50%; transform: translateX(-50%); width: 220px; padding: 12px;">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">分配标签</div>
+                <div id="file-tag-list" style="max-height: 200px; overflow-y: auto;">
+                    <!-- JS动态注入 -->
+                </div>
+                <div style="text-align: right; margin-top: 10px;">
+                    <button id="btn-save-file-tag" style="background: transparent; border: none; color: var(--color-accent); cursor: pointer; font-weight: bold; font-size: 13px;">保存</button>
+                </div>
+            </div>
+        </div>
 
-      <!-- 3. 状态吐司 (对应 ui.js 的 logStatus 目标) -->
-      <div id="status-bar" class="island-toast">✅ 系统就绪</div>
+        <!-- ⓘ 信息 (挂载红框气泡) -->
+        <div class="nav-meta-wrapper">
+            <div class="action-icon" id="btn-main-meta" title="属性信息">ⓘ</div>
+            <div id="popover-meta" class="nav-dropdown-menu" style="left: 50%; transform: translateX(-50%); width: 240px; padding: 12px 16px;">
+                <div class="meta-panel" style="margin-top: 0; background: transparent; border: none; padding: 0;">
+                    <div class="meta-label">状态</div><div id="meta-status-text" style="color: var(--text-main);">已就绪</div>
+                    <div class="meta-label">创建时间</div><div id="meta-created-time">（未保存）</div>
+                    <div class="meta-label">最后更新</div><div id="meta-updated-time">（未保存）</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- [⋮] 更多 (挂载橙框菜单) -->
+        <div class="nav-more-wrapper" style="position: relative;">
+            <div class="action-icon" id="btn-main-more" title="更多">[⋮]</div>
+            <div id="popover-more" class="nav-dropdown-menu" style="right: 0; left: auto; width: 140px;">
+                <div class="nav-tag-item" id="btn-more-new"><span class="nav-tag-name">📄 新建终端</span></div>
+                <div class="nav-tag-item" id="btn-more-hall"><span class="nav-tag-name">🗂️ 文件大厅</span></div>
+                <div class="nav-tag-item" id="btn-more-save"><span class="nav-tag-name">💾 保存同步</span></div>
+                <div class="nav-tag-item" id="btn-more-meta"><span class="nav-tag-name">ⓘ 属性信息</span></div>
+                <div style="height: 1px; background: var(--border-light); margin: 4px 0;"></div>
+                <div class="nav-tag-item" id="btn-more-encrypt" onclick="alert('🔐 独立加密预留插槽')"><span class="nav-tag-name">🔐 独立加密</span></div>
+                <div class="nav-tag-item" id="btn-more-logout"><span class="nav-tag-name" style="color: #f85149;">🚪 物理拔线</span></div>
+            </div>
+        </div>
+      </div>
     </div>
 
+    <!-- 💅 局部样式：专为灵动岛适配的胶囊粘合剂 -->
     <style>
-      /* 灵动岛核心布局 */
+      /* 岛屿根节点：固定在左上角 */
       .geek-island {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        gap: 12px;
+        position: fixed; top: 20px; left: 20px; z-index: 9999;
+        display: flex; align-items: center; gap: 0; /* 无缝拼接 */
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
-      /* 主控圆点 */
-      .island-toggle {
-        width: 44px;
-        height: 44px;
-        background: rgba(22, 27, 34, 0.85);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 20px;
-        cursor: pointer;
-        color: #fff;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s;
-      }
-      .island-toggle:hover { background: rgba(31, 111, 235, 0.9); }
-      .geek-island.active .island-toggle { transform: rotate(180deg); }
-
-      /* 胶囊菜单 */
-      .island-menu {
-        display: flex;
-        align-items: center;
-        background: rgba(22, 27, 34, 0.85);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 22px;
-        padding: 0;
-        width: 0;
-        opacity: 0;
-        overflow: hidden;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
-      .geek-island.active .island-menu {
-        width: 240px; /* 展开宽度 */
-        padding: 0 12px;
-        opacity: 1;
+      /* 头部：包含主控圆点和吐司 */
+      .island-head {
+        display: flex; align-items: center; gap: 12px; position: relative; z-index: 10;
       }
 
-      /* 菜单按钮 */
-      .menu-btn {
-        width: 36px;
-        height: 36px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 18px;
-        cursor: pointer;
-        border-radius: 50%;
-        transition: background 0.2s, transform 0.2s;
-        flex-shrink: 0;
+      /* 重写 action-icon 作为主控圆点，强行变成圆形 */
+      #island-toggle {
+        width: 44px; height: 44px; border-radius: 50%; font-size: 20px;
+        background: var(--bg-panel); border: 1px solid var(--border-light);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s;
       }
-      .menu-btn:hover { background: rgba(255, 255, 255, 0.15); transform: scale(1.1); }
+      /* 360度旋转动画 */
+      .geek-island.active #island-toggle { transform: rotate(360deg); color: var(--color-accent); }
 
-      /* 状态吐司 (隐藏与滑出) */
-      .island-toast {
-        background: rgba(31, 111, 235, 0.9);
-        backdrop-filter: blur(8px);
-        color: #fff;
-        padding: 8px 16px;
-        border-radius: 18px;
-        font-size: 13px;
-        font-weight: 500;
-        white-space: nowrap;
-        opacity: 0;
-        transform: translateX(-20px);
-        transition: all 0.3s ease;
-        pointer-events: none;
+      /* 反馈吐司：幽灵模式 */
+      .status-toast {
+        position: absolute; left: 56px; white-space: nowrap;
+        background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 500;
+        opacity: 0; transform: translateX(-10px); transition: all 0.4s ease; pointer-events: none;
       }
-      .island-toast.show {
-        opacity: 1;
-        transform: translateX(0);
+      .status-toast.show { opacity: 1; transform: translateX(0); }
+      .geek-island.active .status-toast { display: none; } /* 展开菜单时隐藏吐司，避免重叠 */
+
+      /* 主干道胶囊 (抽屉) */
+      .island-bar {
+        display: flex; align-items: center; gap: 8px;
+        background: var(--bg-panel); border: 1px solid var(--border-light);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15); border-radius: 22px;
+        height: 44px; margin-left: -22px; padding: 0 16px 0 32px; /* 左边距吃掉圆点的一半，形成一体感 */
+        
+        /* 抽屉隐藏动画 */
+        max-width: 0; opacity: 0; overflow: visible; pointer-events: none;
+        transform: translateX(-20px); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
+      /* 激活时展开 */
+      .geek-island.active .island-bar {
+        max-width: 500px; opacity: 1; transform: translateX(0); pointer-events: auto;
+      }
+
+      /* 微调气泡下拉层级，确保不被裁切 */
+      .nav-dropdown-menu { margin-top: 14px; transform: translateY(-10px) scale(0.95); opacity: 0; transition: all 0.2s; display: block; pointer-events: none; }
+      .nav-dropdown-menu.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+      
+      /* 美化标签树复选框 */
+      .island-tag-row { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-secondary); padding: 6px 4px; border-radius: 4px; }
+      .island-tag-row:hover { background: var(--bg-hover); color: var(--text-main); }
     </style>
 
+    <!-- 🧠 神经胶水：交互与弹出逻辑 -->
     <script>
-      // 灵动岛交互逻辑
-      const island = document.getElementById('geek-island');
-      const toggleBtn = document.getElementById('island-toggle');
-      const statusBar = document.getElementById('status-bar');
-      let toastTimer = null;
+      (function initGeekIsland() {
+          const island = document.getElementById('geek-island');
+          const toggleBtn = document.getElementById('island-toggle');
+          const toast = document.getElementById('status-toast');
+          let toastTimer = null;
 
-      // 展开/收起菜单
-      toggleBtn.addEventListener('click', () => {
-        island.classList.toggle('active');
-      });
+          // 1. 抽屉开关与 360° 旋转
+          toggleBtn.addEventListener('click', (e) => {
+              e.stopPropagation(); // 阻止冒泡
+              island.classList.toggle('active');
+              closeAllPopovers(); // 收起抽屉时关掉所有气泡
+          });
 
-      // 劫持系统的文本修改，实现 5 秒自动消隐
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'childList' || mutation.type === 'characterData') {
-            statusBar.classList.add('show');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => {
-              statusBar.classList.remove('show');
-            }, 5000);
+          // 2. 幽灵吐司管理器 (提供给其他脚本调用)
+          window.showGeekToast = (msg, isError = false) => {
+              toast.innerText = msg;
+              toast.style.color = isError ? '#f85149' : 'var(--text-muted)';
+              toast.classList.add('show');
+              clearTimeout(toastTimer);
+              toastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
+          };
+
+          // 3. 气泡 Popover 独立互斥管理
+          const popoverMap = {
+              'btn-main-tag': 'popover-tag',
+              'btn-main-meta': 'popover-meta',
+              'btn-main-more': 'popover-more'
+          };
+
+          function closeAllPopovers() {
+              Object.values(popoverMap).forEach(id => {
+                  document.getElementById(id)?.classList.remove('active');
+              });
           }
-        });
-      });
-      observer.observe(statusBar, { childList: true, characterData: true, subtree: true });
+
+          Object.keys(popoverMap).forEach(btnId => {
+              document.getElementById(btnId)?.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  const targetPopover = document.getElementById(popoverMap[btnId]);
+                  const isActive = targetPopover.classList.contains('active');
+                  closeAllPopovers();
+                  if (!isActive) targetPopover.classList.add('active');
+                  
+                  // 若点击的是属性信息，实时更新时间
+                  if (btnId === 'btn-main-meta' && !isActive) updateMetaInfoUI();
+              });
+          });
+
+          // 点击空白处关闭所有气泡
+          document.addEventListener('click', () => closeAllPopovers());
+          
+          // 阻止气泡内部点击冒泡导致关闭
+          Object.values(popoverMap).forEach(id => {
+              document.getElementById(id)?.addEventListener('click', e => e.stopPropagation());
+          });
+
+          // 4. 信息气泡更新逻辑
+          function updateMetaInfoUI() {
+              if (typeof currentFileId !== 'undefined' && currentFileId) {
+                  const meta = globalFilesCache?.find(f => f.id === currentFileId);
+                  if (meta) {
+                      document.getElementById('meta-created-time').innerText = meta.createdAt || '-';
+                      document.getElementById('meta-updated-time').innerText = meta.updatedAt || '-';
+                      document.getElementById('meta-status-text').innerText = '已云端同步';
+                      return;
+                  }
+              }
+              document.getElementById('meta-created-time').innerText = '（未分配）';
+              document.getElementById('meta-updated-time').innerText = '（未分配）';
+              document.getElementById('meta-status-text').innerText = '本地内存编辑中';
+          }
+      })();
     </script>
 
     <!-- ================= 全屏模态框：文件大厅 ================= -->
