@@ -105,7 +105,16 @@
       .island-toast-msg.show { opacity: 1; transform: translateY(-50%) translateX(0) !important; }
       .geek-island.active .island-toast-msg { display: none !important; } 
 
-      .island-bar { display: flex; align-items: center; gap: 8px; background: var(--bg-panel); border: 1px solid var(--border-light); box-shadow: 0 4px 16px rgba(0,0,0,0.15); border-radius: 22px; height: 44px; margin-left: -22px; padding: 0 16px 0 32px; width: max-content; position: relative; z-index: 10; max-width: 0; opacity: 0; overflow: visible; pointer-events: none; transform: translateX(-20px); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+      /* 修改点 1：把 margin-left 从 -22px 改成 10px，拉开完美间距 */
+      .island-bar { 
+        display: flex; align-items: center; gap: 8px; 
+        background: var(--bg-panel); border: 1px solid var(--border-light); 
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15); border-radius: 22px; 
+        height: 44px; margin-left: 10px; padding: 0 16px; 
+        width: max-content; position: relative; z-index: 10; 
+        max-width: 0; opacity: 0; overflow: visible; pointer-events: none; 
+        transform: translateX(-10px); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+      }
       .geek-island.active .island-bar { max-width: 500px; opacity: 1; transform: translateX(0); pointer-events: auto; }
 
       .island-popover-wrapper { position: relative; display: flex; align-items: center; height: 100%; }
@@ -118,18 +127,20 @@
       .island-dropdown-item { display: flex; align-items: center; padding: 10px 16px; cursor: pointer; transition: background 0.2s; font-size: 13px; color: var(--text-main); white-space: nowrap; }
       .island-dropdown-item:hover { background: var(--bg-hover); }
 
-      /* 🚨 完美复刻 1：信息面板 Grid 网格对齐 */
       .meta-panel { display: grid; grid-template-columns: 60px 1fr; gap: 12px; font-size: 13px; color: var(--text-muted); align-items: start; }
       .meta-label { font-weight: 500; }
       #meta-created-time, #meta-updated-time { color: var(--text-main); }
       
-      /* 🚨 完美复刻 2：精致的 Pill 标签胶囊 */
       .island-tag-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--border-medium); border-radius: 12px; font-size: 12px; color: var(--text-main); background: var(--bg-body); }
       
-      /* 🚨 完美复刻 3：打标签面板行距与悬浮色 */
-      .island-tag-row { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-main); padding: 8px 16px; font-size: 13px; transition: background 0.2s; margin: 0;}
+      /* 修改点 2：强化标签行的布局，确保复选框绝对对齐 */
+      .island-tag-row { 
+        display: flex; align-items: center; justify-content: flex-start; gap: 8px; 
+        cursor: pointer; color: var(--text-main); padding: 8px 16px; 
+        font-size: 13px; transition: background 0.2s; margin: 0; text-align: left;
+      }
       .island-tag-row:hover { background: var(--bg-hover); }
-      .file-tag-checkbox { margin: 0; cursor: pointer; }
+      .file-tag-checkbox { margin: 0 !important; padding: 0; cursor: pointer; flex-shrink: 0; }
     </style>
 
     <!-- 🧠 神经胶水：交互与弹出逻辑 -->
