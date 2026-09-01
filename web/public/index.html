@@ -44,7 +44,8 @@
       <!-- 🔵 总开关与反馈吐司 -->
       <div class="island-head">
         <div id="island-toggle" class="action-icon" title="展开/收起">☁️</div>
-        <div id="status-toast" class="status-bar-text">✅ 系统就绪</div>
+        <!-- 🚨 修复 1：补上 status-toast 类名，让它绝对定位悬浮 -->
+        <div id="status-toast" class="status-bar-text status-toast">✅ 系统就绪</div>
       </div>
       
       <!-- 🟢 主干道 (绿框逻辑，复用暗黑胶囊样式) -->
@@ -57,7 +58,6 @@
         <!-- 🏷️ 标签 (挂载红框气泡) -->
         <div class="nav-tag-wrapper">
             <div class="action-icon" id="btn-main-tag" title="打标签">🏷️</div>
-            <!-- 复用你原版的下沉菜单样式 -->
             <div id="popover-tag" class="nav-dropdown-menu" style="left: 50%; transform: translateX(-50%); width: 220px; padding: 12px;">
                 <div style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">分配标签</div>
                 <div id="file-tag-list" style="max-height: 200px; overflow-y: auto;">
@@ -102,7 +102,7 @@
       /* 岛屿根节点：固定在左上角 */
       .geek-island {
         position: fixed; top: 20px; left: 20px; z-index: 9999;
-        display: flex; align-items: center; gap: 0; /* 无缝拼接 */
+        display: flex; align-items: center; gap: 0; 
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
@@ -115,37 +115,47 @@
       #island-toggle {
         width: 44px; height: 44px; border-radius: 50%; font-size: 20px;
         background: var(--bg-panel); border: 1px solid var(--border-light);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s;
       }
-      /* 360度旋转动画 */
-      .geek-island.active #island-toggle { transform: rotate(360deg); color: var(--color-accent); }
+      /* 激活时转 135度 且变色 */
+      .geek-island.active #island-toggle { transform: rotate(135deg); color: var(--color-accent) !important; }
 
       /* 反馈吐司：幽灵模式 */
       .status-toast {
         position: absolute; left: 56px; white-space: nowrap;
-        background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 500;
+        background: var(--bg-panel); color: var(--color-accent);
+        padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-light);
         opacity: 0; transform: translateX(-10px); transition: all 0.4s ease; pointer-events: none;
       }
       .status-toast.show { opacity: 1; transform: translateX(0); }
-      .geek-island.active .status-toast { display: none; } /* 展开菜单时隐藏吐司，避免重叠 */
+      .geek-island.active .status-toast { display: none; } 
 
       /* 主干道胶囊 (抽屉) */
       .island-bar {
         display: flex; align-items: center; gap: 8px;
         background: var(--bg-panel); border: 1px solid var(--border-light);
         box-shadow: 0 4px 16px rgba(0,0,0,0.15); border-radius: 22px;
-        height: 44px; margin-left: -22px; padding: 0 16px 0 32px; /* 左边距吃掉圆点的一半，形成一体感 */
+        height: 44px; margin-left: -22px; padding: 0 16px 0 32px; 
+        width: max-content;
         
-        /* 抽屉隐藏动画 */
         max-width: 0; opacity: 0; overflow: visible; pointer-events: none;
         transform: translateX(-20px); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
-      /* 激活时展开 */
       .geek-island.active .island-bar {
         max-width: 500px; opacity: 1; transform: translateX(0); pointer-events: auto;
       }
 
-      /* 微调气泡下拉层级，确保不被裁切 */
+      /* 🚨 修复 2：强制纠正浅色模式下，文字图标隐身的问题 */
+      .island-bar .action-icon, .island-head .action-icon {
+        color: var(--text-secondary) !important;
+      }
+      .island-bar .action-icon:hover, .island-head .action-icon:hover {
+        color: var(--text-main) !important;
+        background: var(--bg-hover) !important;
+      }
+
+      /* 微调气泡下拉层级 */
       .nav-dropdown-menu { margin-top: 14px; transform: translateY(-10px) scale(0.95); opacity: 0; transition: all 0.2s; display: block; pointer-events: none; }
       .nav-dropdown-menu.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
       
