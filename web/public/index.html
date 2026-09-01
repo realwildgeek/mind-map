@@ -208,12 +208,12 @@
                               currentTags.forEach(tagId => {
                                   const tagObj = globalTagsCache.find(t => t.id === tagId);
                                   if (tagObj) {
-                                      tagsContainer.innerHTML += `
-                                          <div class="island-tag-pill">
-                                              <div style="width: 8px; height: 8px; border-radius: 50%; background: ${tagObj.color};"></div>
-                                              ${tagObj.name}
-                                          </div>
-                                      `;
+                                      // 🚨 修复编译报错：改用纯字符串拼接，绕过 Webpack 模板引擎的误杀
+                                      tagsContainer.innerHTML += 
+                                          '<div class="island-tag-pill">' +
+                                              '<div style="width: 8px; height: 8px; border-radius: 50%; background: ' + tagObj.color + ';"></div>' +
+                                              tagObj.name +
+                                          '</div>';
                                   }
                               });
                           } else {
