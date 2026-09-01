@@ -20,9 +20,29 @@ let mindMapData = null
 let cloudDataCache = null
 
 // 🌐 【核心强注释】：维护云端多文件与全局索引状态
-let currentFileId = new URLSearchParams(window.location.search).get('id') || null
+let currentFileId = new URLSearchParams(window.location.search).get('id')
+
+// 🚀 极客智能路由分发中心 (Local Context Snapshot)
+if (!currentFileId) {
+    const lastOpenedId = localStorage.getItem('geek_last_opened_id')
+    if (lastOpenedId) {
+        // 1. 存在历史快照，瞬间重定向恢复现场 (不留历史记录)
+        window.location.replace(`/?id=${lastOpenedId}`)
+    } else {
+        // 2. 无记忆 (新设备/已注销)，挂载完成后自动呼出文件大厅
+        setTimeout(() => {
+            document.getElementById('geek-island')?.classList.remove('active')
+            document.getElementById('fileBrowserModal')?.classList.add('active')
+            if(window.showGeekToast) window.showGeekToast('👋 欢迎，请选择或新建脑图')
+        }, 800)
+    }
+} else {
+    // 3. 只要显式携带 ID 访问，就更新本地快照
+    localStorage.setItem('geek_last_opened_id', currentFileId)
+}
+
 let globalFilesCache = []
-let globalTagsCache = [] // 新增
+let globalTagsCache = []
 
 // 格式化时间工具
 const getFormattedTime = () => {
