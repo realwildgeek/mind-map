@@ -39,132 +39,97 @@
     <div id="app"></div>
     <!-- built files will be auto injected -->
 
-    <!-- ================= 极客灵动岛 2.0 (暗黑原味还原版) ================= -->
+    <!-- ================= 极客灵动岛 2.0 (极客美学复刻版) ================= -->
     <div id="geek-island" class="geek-island">
       <!-- 🔵 头部：总开关与反馈吐司 -->
       <div class="island-head">
         <div id="island-toggle" class="island-icon-btn" title="展开/收起">☁️</div>
-        <!-- 还原纯正的蓝色极客吐司 -->
-        <div id="status-bar" class="island-toast-msg">✅ 系统就绪</div>
+        <div id="status-bar" class="island-toast-msg" style="position: absolute; left: 56px; top: 50%; transform: translateY(-50%) translateX(-10px);">✅ 系统就绪</div>
       </div>
       
-      <!-- 🟢 主干道 (绝对还原暗黑玻璃态) -->
+      <!-- 🟢 主干道 -->
       <div id="island-bar" class="island-bar">
         <div class="island-icon-btn" id="btn-main-hall" title="文件大厅">🗂️</div>
         <div class="island-icon-btn" id="btn-main-save" title="安全同步">💾</div>
         
-        <!-- 🏷️ 标签气泡 -->
+        <!-- 🏷️ 标签气泡 (一比一复刻：无标题、沉浸式列表) -->
         <div class="island-popover-wrapper">
             <div class="island-icon-btn" id="btn-main-tag" title="打标签">🏷️</div>
-            <div id="popover-tag" class="island-popover-menu" style="left: 50%; transform: translateX(-50%); width: 220px; padding: 12px;">
-                <div style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">分配标签</div>
-                <div id="file-tag-list" style="max-height: 200px; overflow-y: auto;"></div>
-                <div style="text-align: right; margin-top: 10px;">
-                    <button id="btn-save-file-tag" style="background: transparent; border: none; color: var(--color-accent); cursor: pointer; font-weight: bold; font-size: 13px;">保存</button>
+            <div id="popover-tag" class="island-popover-menu" style="left: 50%; transform: translateX(-50%); width: 200px; padding: 8px 0;">
+                <div id="file-tag-list" style="max-height: 250px; overflow-y: auto;">
+                    <!-- JS动态注入树状列表 -->
                 </div>
             </div>
         </div>
 
-        <!-- ⓘ 信息气泡 -->
+        <!-- ⓘ 信息气泡 (一比一复刻：Grid对齐、Pill胶囊标签) -->
         <div class="island-popover-wrapper">
             <div class="island-icon-btn" id="btn-main-meta" title="属性信息">ⓘ</div>
-            <div id="popover-meta" class="island-popover-menu" style="left: 50%; transform: translateX(-50%); width: 240px; padding: 12px 16px;">
-                <div class="meta-panel" style="margin-top: 0; background: transparent; border: none; padding: 0;">
-                    <div class="meta-label">状态</div><div id="meta-status-text" style="color: var(--text-main);">已就绪</div>
+            <div id="popover-meta" class="island-popover-menu" style="left: 50%; transform: translateX(-50%); width: 280px; padding: 16px;">
+                <div class="meta-panel">
                     <div class="meta-label">创建时间</div><div id="meta-created-time">（未保存）</div>
-                    <div class="meta-label">最后更新</div><div id="meta-updated-time">（未保存）</div>
+                    <div class="meta-label">最后修改</div><div id="meta-updated-time">（未保存）</div>
+                    <div class="meta-label">极客标签</div>
+                    <div id="meta-tags-container" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                 </div>
             </div>
         </div>
 
         <!-- [⋮] 更多气泡 -->
         <div class="island-popover-wrapper">
-            <div class="island-icon-btn" id="btn-main-more" title="更多" style="color: #fff;">⋮</div>
-            <div id="popover-more" class="island-popover-menu" style="right: 0; left: auto; width: 140px;">
-                <div class="island-tag-item" id="btn-more-new">📄 新建终端</div>
-                <div class="island-tag-item" id="btn-more-hall">🗂️ 文件大厅</div>
-                <div class="island-tag-item" id="btn-more-save">💾 保存同步</div>
-                <div class="island-tag-item" id="btn-more-meta">ⓘ 属性信息</div>
+            <div class="island-icon-btn" id="btn-main-more" title="更多">⋮</div>
+            <div id="popover-more" class="island-popover-menu" style="right: 0; left: auto; width: 140px; padding: 8px 0;">
+                <div class="island-dropdown-item" id="btn-more-new">📄 新建终端</div>
+                <div class="island-dropdown-item" id="btn-more-hall">🗂️ 文件大厅</div>
+                <div class="island-dropdown-item" id="btn-more-save">💾 保存同步</div>
+                <div class="island-dropdown-item" id="btn-more-meta">ⓘ 属性信息</div>
                 <div style="height: 1px; background: var(--border-light); margin: 4px 0;"></div>
-                <div class="island-tag-item" id="btn-more-encrypt" onclick="alert('🔐 独立加密预留插槽')">🔐 独立加密</div>
-                <div class="island-tag-item" id="btn-more-logout" style="color: #f85149;">🚪 物理拔线</div>
+                <div class="island-dropdown-item" id="btn-more-encrypt" onclick="alert('🔐 独立加密预留插槽')">🔐 独立加密</div>
+                <div class="island-dropdown-item" id="btn-more-logout" style="color: #f85149;">🚪 物理拔线</div>
             </div>
         </div>
       </div>
     </div>
 
-    <!-- 💅 局部样式：原汁原味的暗黑胶囊 -->
+    <!-- 💅 局部样式：专为灵动岛适配的胶囊粘合剂 -->
     <style>
-      .geek-island {
-        position: fixed; top: 20px; left: 20px; z-index: 99999;
-        display: flex; align-items: center; gap: 0; 
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
+      .geek-island { position: fixed; top: 20px; left: 20px; z-index: 99999; display: flex; align-items: center; gap: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .island-head { display: flex; align-items: center; position: relative; z-index: 20; }
+      .island-icon-btn { font-size: 18px; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; cursor: pointer; border-radius: 8px; transition: 0.2s; color: var(--text-main) !important; }
+      .island-icon-btn:hover { background: var(--bg-hover) !important; }
+      
+      #island-toggle { width: 44px; height: 44px; border-radius: 50%; font-size: 20px; background: var(--bg-panel); border: 1px solid var(--border-light); box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s; }
+      .geek-island.active #island-toggle { transform: rotate(135deg); color: var(--color-accent) !important; }
 
-      .island-head {
-        display: flex; align-items: center; position: relative; z-index: 20;
-      }
-
-      /* 🚨 核心还原：去除强制字体颜色，让 Emoji 恢复原生彩色！ */
-      .island-icon-btn {
-        font-size: 18px; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center;
-        cursor: pointer; border-radius: 50%; transition: background 0.2s, transform 0.2s;
-      }
-      /* 🚨 核心还原：恢复暗黑模式下的悬浮高亮 */
-      .island-icon-btn:hover { background: rgba(255, 255, 255, 0.15); transform: scale(1.1); }
-
-      /* 🚨 核心还原：云朵按钮恢复暗黑半透明玻璃态 */
-      #island-toggle {
-        width: 44px; height: 44px; border-radius: 50%; font-size: 20px;
-        background: rgba(22, 27, 34, 0.85); backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s;
-        color: #fff;
-      }
-      .geek-island.active #island-toggle { transform: rotate(135deg); }
-
-      /* 🚨 核心还原：吐司恢复蓝色极客形态 */
-      .island-toast-msg {
-        position: absolute; left: 56px; top: 50%;
-        white-space: nowrap; background: rgba(31, 111, 235, 0.9); backdrop-filter: blur(8px);
-        color: #fff; padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 600;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.1);
-        opacity: 0; transition: all 0.4s ease; pointer-events: none; z-index: 15;
-        transform: translateY(-50%) translateX(-10px);
-      }
-      .island-toast-msg.show { opacity: 1; transform: translateY(-50%) translateX(0); }
+      .island-toast-msg { white-space: nowrap; background: var(--bg-panel); color: var(--color-accent); padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-light); opacity: 0; transition: all 0.4s ease; pointer-events: none; z-index: 15; }
+      .island-toast-msg.show { opacity: 1; transform: translateY(-50%) translateX(0) !important; }
       .geek-island.active .island-toast-msg { display: none !important; } 
 
-      /* 🚨 核心还原：主干道胶囊恢复暗黑玻璃态 */
-      .island-bar {
-        display: flex; align-items: center; gap: 4px;
-        background: rgba(22, 27, 34, 0.85); backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 24px rgba(0,0,0,0.2); 
-        border-radius: 22px; height: 44px; margin-left: -22px; padding: 0 16px 0 32px; 
-        width: max-content; position: relative; z-index: 10; 
-        
-        max-width: 0; opacity: 0; overflow: visible; pointer-events: none;
-        transform: translateX(-20px); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
+      .island-bar { display: flex; align-items: center; gap: 8px; background: var(--bg-panel); border: 1px solid var(--border-light); box-shadow: 0 4px 16px rgba(0,0,0,0.15); border-radius: 22px; height: 44px; margin-left: -22px; padding: 0 16px 0 32px; width: max-content; position: relative; z-index: 10; max-width: 0; opacity: 0; overflow: visible; pointer-events: none; transform: translateX(-20px); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
       .geek-island.active .island-bar { max-width: 500px; opacity: 1; transform: translateX(0); pointer-events: auto; }
 
       .island-popover-wrapper { position: relative; display: flex; align-items: center; height: 100%; }
-      
-      /* 下拉气泡使用全局主题色，融入页面 */
-      .island-popover-menu {
-        position: absolute; top: 100%; margin-top: 14px; background: var(--bg-body); 
-        border: 1px solid var(--border-light); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); 
-        opacity: 0; transition: all 0.2s; display: block; pointer-events: none;
-        transform: translateY(-10px) translateX(-50%);
-      }
+      .island-popover-menu { position: absolute; top: 100%; margin-top: 14px; background: var(--bg-body); border: 1px solid var(--border-light); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); opacity: 0; transition: all 0.2s; display: block; pointer-events: none; transform: translateY(-10px) translateX(-50%); }
       .island-popover-menu[style*="right: 0"] { transform: translateY(-10px); }
-      
       .island-popover-menu.active { opacity: 1; pointer-events: auto; }
       .island-popover-wrapper:not(:last-child) .island-popover-menu.active { transform: translateY(0) translateX(-50%); }
       .island-popover-wrapper:last-child .island-popover-menu.active { transform: translateY(0); }
       
-      .island-tag-item { display: flex; align-items: center; padding: 10px 16px; cursor: pointer; transition: background 0.2s; font-size: 13px; color: var(--text-main); white-space: nowrap; }
-      .island-tag-item:hover { background: var(--bg-hover); }
+      .island-dropdown-item { display: flex; align-items: center; padding: 10px 16px; cursor: pointer; transition: background 0.2s; font-size: 13px; color: var(--text-main); white-space: nowrap; }
+      .island-dropdown-item:hover { background: var(--bg-hover); }
+
+      /* 🚨 完美复刻 1：信息面板 Grid 网格对齐 */
+      .meta-panel { display: grid; grid-template-columns: 60px 1fr; gap: 12px; font-size: 13px; color: var(--text-muted); align-items: start; }
+      .meta-label { font-weight: 500; }
+      #meta-created-time, #meta-updated-time { color: var(--text-main); }
+      
+      /* 🚨 完美复刻 2：精致的 Pill 标签胶囊 */
+      .island-tag-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--border-medium); border-radius: 12px; font-size: 12px; color: var(--text-main); background: var(--bg-body); }
+      
+      /* 🚨 完美复刻 3：打标签面板行距与悬浮色 */
+      .island-tag-row { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-main); padding: 8px 16px; font-size: 13px; transition: background 0.2s; margin: 0;}
+      .island-tag-row:hover { background: var(--bg-hover); }
+      .file-tag-checkbox { margin: 0; cursor: pointer; }
     </style>
 
     <!-- 🧠 神经胶水：交互与弹出逻辑 -->
@@ -226,19 +191,41 @@
           });
 
           // 4. 信息气泡更新逻辑
-          function updateMetaInfoUI() {
+          // 将更新 UI 的方法挂载到全局，供 api/index.js 调用
+          window.updateMetaInfoUI = function() {
               if (typeof currentFileId !== 'undefined' && currentFileId) {
-                  const meta = globalFilesCache?.find(f => f.id === currentFileId);
-                  if (meta) {
-                      document.getElementById('meta-created-time').innerText = meta.createdAt || '-';
-                      document.getElementById('meta-updated-time').innerText = meta.updatedAt || '-';
-                      document.getElementById('meta-status-text').innerText = '已云端同步';
-                      return;
+                  if(typeof globalFilesCache !== 'undefined'){
+                      const meta = globalFilesCache.find(f => f.id === currentFileId);
+                      if (meta) {
+                          document.getElementById('meta-created-time').innerText = meta.createdAt || '-';
+                          document.getElementById('meta-updated-time').innerText = meta.updatedAt || '-';
+                          
+                          // 渲染精致的 Pill 胶囊标签
+                          const tagsContainer = document.getElementById('meta-tags-container');
+                          tagsContainer.innerHTML = '';
+                          const currentTags = meta.tags || [];
+                          if (currentTags.length > 0 && typeof globalTagsCache !== 'undefined') {
+                              currentTags.forEach(tagId => {
+                                  const tagObj = globalTagsCache.find(t => t.id === tagId);
+                                  if (tagObj) {
+                                      tagsContainer.innerHTML += `
+                                          <div class="island-tag-pill">
+                                              <div style="width: 8px; height: 8px; border-radius: 50%; background: ${tagObj.color};"></div>
+                                              ${tagObj.name}
+                                          </div>
+                                      `;
+                                  }
+                              });
+                          } else {
+                              tagsContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">无</span>';
+                          }
+                          return;
+                      }
                   }
               }
-              document.getElementById('meta-created-time').innerText = '（未分配）';
-              document.getElementById('meta-updated-time').innerText = '（未分配）';
-              document.getElementById('meta-status-text').innerText = '本地内存编辑中';
+              document.getElementById('meta-created-time').innerText = '（未保存）';
+              document.getElementById('meta-updated-time').innerText = '（未保存）';
+              document.getElementById('meta-tags-container').innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">无</span>';
           }
       })();
     </script>
