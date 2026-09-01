@@ -295,11 +295,10 @@ setTimeout(() => {
     }
   })
 
-  // 8. 绑定 [打标签] 气泡桥梁渲染
+  // 8. 绑定 [打标签] 气泡桥梁渲染 (树状层级复刻)
   document.getElementById('btn-main-tag')?.addEventListener('click', () => {
     if (!currentFileId) {
       if(window.showGeekToast) window.showGeekToast('⚠️ 请先保存脑图再打标签', true)
-      // 延时关闭刚被 HTML 逻辑打开的气泡
       setTimeout(() => document.getElementById('popover-tag')?.classList.remove('active'), 10)
       return
     }
@@ -311,37 +310,51 @@ setTimeout(() => {
     const currentFileTags = fileMeta?.tags || []
 
     if (globalTagsCache.length === 0) {
-        listContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">暂无标签，请先在文件大厅新建。</div>'
+        listContainer.innerHTML = '<div style="padding: 12px 16px; color: var(--text-muted); font-size: 13px;">暂无标签，请先在文件大厅新建。</div>'
     } else {
-        globalTagsCache.forEach(tag => {
-          const isChecked = currentFileTags.includes(tag.id) ? 'checked' : ''
-          listContainer.innerHTML += `
-            <label class="island-tag-row">
-              <input type="checkbox" value="${tag.id}" class="file-tag-checkbox" ${isChecked} style="cursor: pointer;">
-              <div style="width: 10px; height: 10px; border-radius: 50%; background: ${tag.color}; flex-shrink: 0;"></div>
-              ${tag.name}
-            </label>
-          `
-        })
+        // 🚨 核心复刻：递归渲染树状结构与缩进
+        function renderTagTree(tags, parentId = '', level = 0) {
+            let html = '';
+            const children = tags.filter(t => (t.parentId || '') === parentId);
+            children.forEach(tag => {
+                const isChecked = currentFileTags.includes(tag.id) ? 'checked' : '';
+                const paddingLeft = 16 + level * 20; // 根据层级计算缩进距离
+                html += `
+                  <label class="island-tag-row" style="padding-left: ${paddingLeft}px;">
+                    <input type="checkbox" value="${tag.id}" class="file-tag-checkbox" ${isChecked}>
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${tag.color}; flex-shrink: 0;"></div>
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${tag.name}</span>
+                  </label>
+                `;
+                html += renderTagTree(tags, tag.id, level + 1);
+            });
+            return html;
+        }
+        listContainer.innerHTML = renderTagTree(globalTagsCache);
     }
   })
 
-  // 9. 保存标签关联并云推流 (气泡内部保存按钮)
-  document.getElementById('btn-save-file-tag')?.addEventListener('click', async (e) => {
-    e.stopPropagation() // 防止事件冒泡导致页面误关闭气泡
-    if (!currentFileId) return
-    const checkboxes = document.querySelectorAll('.file-tag-checkbox:checked')
-    const selectedTagIds = Array.from(checkboxes).map(cb => cb.value)
+  // 9. 极客式“点选即存”同步联动 (抛弃保存按钮)
+  document.getElementById('file-tag-list')?.addEventListener('change', (e) => {
+    if (e.target.classList.contains('file-tag-checkbox')) {
+        if (!currentFileId) return
+        
+        // 瞬间抓取所有已勾选的框
+        const checkboxes = document.querySelectorAll('.file-tag-checkbox:checked')
+        const selectedTagIds = Array.from(checkboxes).map(cb => cb.value)
 
-    const fileIndex = globalFilesCache.findIndex(f => f.id === currentFileId)
-    if (fileIndex >= 0) {
-      globalFilesCache[fileIndex].tags = selectedTagIds
-      
-      storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
-      
-      if(window.showGeekToast) window.showGeekToast('🏷️ 标签分配成功')
-      document.getElementById('popover-tag').classList.remove('active')
+        const fileIndex = globalFilesCache.findIndex(f => f.id === currentFileId)
+        if (fileIndex >= 0) {
+          globalFilesCache[fileIndex].tags = selectedTagIds
+          
+          // 触发盲化推流
+          storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
+          
+          if(window.showGeekToast) window.showGeekToast('🏷️ 标签已实时同步')
+          
+          // 瞬间刷新 ⓘ 面板里的胶囊，实现数据联动
+          if(typeof window.updateMetaInfoUI === 'function') window.updateMetaInfoUI()
+        }
     }
   })
-
 }, 1000)
