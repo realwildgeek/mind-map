@@ -206,34 +206,33 @@ export const getLocalConfig = () => {
 };
 
 // =======================================================
-// ☁️ 极客灵动岛交互与文件大厅粘合剂 (零侵入 DOM 绑定)
+// ☁️ 极客灵动岛交互与文件大厅粘合剂 (2.0 抽屉版)
 // =======================================================
 let tagManagerInstance = null
 
-// 因为 Vue 打包异步加载，我们需要确保 DOM 渲染完毕后再绑事件
 setTimeout(() => {
-  // 1. 绑定 [新建终端]
-  document.getElementById('menu-btn-new-note')?.addEventListener('click', () => {
-    // 直接剥离 URL 参数重新加载页面，触发无 ID 初始化逻辑
+  // 1. 绑定 [新建终端] (仅在更多菜单)
+  document.getElementById('btn-more-new')?.addEventListener('click', () => {
     window.location.href = '/'
   })
 
-  // 2. 绑定 [文件大厅]
-  document.getElementById('menu-btn-hall')?.addEventListener('click', () => {
-    document.getElementById('island-menu').parentElement.classList.remove('active') // 收起灵动岛
+  // 2. 绑定 [文件大厅] (主干道 & 更多菜单双重绑定)
+  const openHallUI = () => {
+    document.getElementById('geek-island').classList.remove('active') // 收起抽屉
     document.getElementById('fileBrowserModal').classList.add('active')
     document.querySelector('.modal-sidebar').classList.add('tags-collapsed')
 
-    // 实例化/刷新标签管理器与大厅 UI
     if (!tagManagerInstance) {
       tagManagerInstance = new TagManager('tag-sidebar-list', globalTagsCache, async (newTags) => {
         globalTagsCache = newTags
-        await updateCloudTags(newTags) // 标签变动自动推流至 KV
+        await updateCloudTags(newTags) 
         refreshHallUI('all')
       })
     }
     refreshHallUI('all')
-  })
+  }
+  document.getElementById('btn-main-hall')?.addEventListener('click', openHallUI)
+  document.getElementById('btn-more-hall')?.addEventListener('click', openHallUI)
 
   // 3. 渲染大厅的核心逻辑
   function refreshHallUI(activeTagId = 'all') {
@@ -241,12 +240,8 @@ setTimeout(() => {
       globalFilesCache, 
       globalTagsCache, 
       activeTagId,
-      (fileId) => { 
-        // 击中文件，直接带着新 ID 重新加载页面
-        window.location.href = `/?id=${fileId}`
-      },
+      (fileId) => { window.location.href = `/?id=${fileId}` },
       async (fileId) => { 
-        // 击中垃圾桶，执行物理销毁
         if (confirm("⚠️ 确认在云端彻底抹除该脑图？此操作不可逆！")) {
           globalFilesCache = globalFilesCache.filter(f => f.id !== fileId)
           await deleteNote(fileId, globalFilesCache)
@@ -261,25 +256,23 @@ setTimeout(() => {
     document.getElementById('fileBrowserModal').classList.remove('active')
   })
 
-  // 4. 绑定 [安全同步] (手动保存)
-  document.getElementById('menu-btn-save')?.addEventListener('click', () => {
-    document.getElementById('island-menu').parentElement.classList.remove('active')
-    // 强制调用合并保存逻辑
+  // 4. 绑定 [安全同步] (主干道 & 更多菜单双重绑定)
+  const triggerSave = () => {
+    document.getElementById('geek-island').classList.remove('active')
     storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
-    document.getElementById('status-bar').innerText = '✅ 手动安全同步完成'
-  })
+    if(window.showGeekToast) window.showGeekToast('✅ 手动安全同步完成')
+  }
+  document.getElementById('btn-main-save')?.addEventListener('click', triggerSave)
+  document.getElementById('btn-more-save')?.addEventListener('click', triggerSave)
 
   // 5. 绑定 [物理拔线] (退出登录)
-  document.getElementById('btn-logout')?.addEventListener('click', () => {
+  document.getElementById('btn-more-logout')?.addEventListener('click', () => {
     logout()
   })
 
-  // 6. 绑定 [独立加密] (占位预留)
-  document.getElementById('btn-file-encrypt')?.addEventListener('click', () => {
-    alert('🔐 独立加密功能已预留，敬请期待！')
-  })
+  // (注: btn-more-encrypt 的独立加密预留在 HTML onclick 中实现了，无需在此绑定)
 
-  // 7. 绑定 [新建标签]
+  // 6. 绑定 [新建标签] (大厅内)
   document.getElementById('btn-add-tag')?.addEventListener('click', async () => {
     const result = await askForTagDetails(tagManagerInstance)
     if (result && result.action === 'save') { 
@@ -287,7 +280,7 @@ setTimeout(() => {
     }
   })
 
-  // 8. 监听 [编辑/删除标签] 的全局事件
+  // 7. 监听 [编辑/删除标签] 全局事件 (大厅内)
   document.addEventListener('tag-edit', async (e) => {
     const tag = e.detail
     const result = await askForTagDetails(tagManagerInstance, tag)
@@ -302,61 +295,53 @@ setTimeout(() => {
     }
   })
 
-  // 9. 绑定 [打标签] 桥梁
-  document.getElementById('menu-btn-tag')?.addEventListener('click', () => {
+  // 8. 绑定 [打标签] 气泡桥梁渲染
+  document.getElementById('btn-main-tag')?.addEventListener('click', () => {
     if (!currentFileId) {
-      alert('⚠️ 请先点击 💾 保存新建的脑图，再为其分配标签！')
+      if(window.showGeekToast) window.showGeekToast('⚠️ 请先保存脑图再打标签', true)
+      // 延时关闭刚被 HTML 逻辑打开的气泡
+      setTimeout(() => document.getElementById('popover-tag')?.classList.remove('active'), 10)
       return
     }
-    document.getElementById('island-menu').parentElement.classList.remove('active') // 收起灵动岛
     
     const listContainer = document.getElementById('file-tag-list')
     listContainer.innerHTML = ''
 
-    // 提取当前文件在内存中已有的标签
     const fileMeta = globalFilesCache.find(f => f.id === currentFileId)
     const currentFileTags = fileMeta?.tags || []
 
     if (globalTagsCache.length === 0) {
-        listContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">暂无标签，请先在文件大厅新建标签。</div>'
+        listContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">暂无标签，请先在文件大厅新建。</div>'
     } else {
-        // 动态渲染所有云端标签为复选框
         globalTagsCache.forEach(tag => {
           const isChecked = currentFileTags.includes(tag.id) ? 'checked' : ''
           listContainer.innerHTML += `
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-size: 14px; padding: 4px 0;">
+            <label class="island-tag-row">
               <input type="checkbox" value="${tag.id}" class="file-tag-checkbox" ${isChecked} style="cursor: pointer;">
-              <div style="width: 12px; height: 12px; border-radius: 50%; background: ${tag.color};"></div>
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: ${tag.color}; flex-shrink: 0;"></div>
               ${tag.name}
             </label>
           `
         })
     }
-    document.getElementById('fileTagModal').classList.add('active')
   })
 
-  // 关闭标签模态框
-  document.getElementById('btn-cancel-file-tag')?.addEventListener('click', () => {
-    document.getElementById('fileTagModal').classList.remove('active')
-  })
-
-  // 保存标签关联并推流
-  document.getElementById('btn-save-file-tag')?.addEventListener('click', async () => {
+  // 9. 保存标签关联并云推流 (气泡内部保存按钮)
+  document.getElementById('btn-save-file-tag')?.addEventListener('click', async (e) => {
+    e.stopPropagation() // 防止事件冒泡导致页面误关闭气泡
     if (!currentFileId) return
     const checkboxes = document.querySelectorAll('.file-tag-checkbox:checked')
     const selectedTagIds = Array.from(checkboxes).map(cb => cb.value)
 
     const fileIndex = globalFilesCache.findIndex(f => f.id === currentFileId)
     if (fileIndex >= 0) {
-      // 1. 覆盖内存中该文件的标签数组
       globalFilesCache[fileIndex].tags = selectedTagIds
       
-      // 2. 强制触发一次云端双轨保存（推流到 KV 索引）
       storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
       
-      document.getElementById('status-bar').innerText = '🏷️ 标签分配成功'
-      document.getElementById('fileTagModal').classList.remove('active')
+      if(window.showGeekToast) window.showGeekToast('🏷️ 标签分配成功')
+      document.getElementById('popover-tag').classList.remove('active')
     }
   })
 
-}, 1000) // 延迟 1 秒确保 index.html 的灵动岛已就位
+}, 1000)
