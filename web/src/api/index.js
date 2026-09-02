@@ -68,6 +68,44 @@ if (isForceNew) {
 let globalFilesCache = []
 let globalTagsCache = []
 
+// 🚨 完美复刻 main.js：独立的当前脑图标签状态 
+let currentNoteTags = []
+
+// 🧠 属性面板 UI 精准轰炸函数
+const refreshMetaUI = (forceCreated, forceUpdated) => {
+    const metaCreated = document.getElementById('meta-created');
+    const metaUpdated = document.getElementById('meta-updated');
+    const metaTags = document.getElementById('meta-tags'); 
+
+    let created = forceCreated;
+    let updated = forceUpdated;
+
+    // 如果未传时间，则从全局缓存抓取兜底
+    if (!created || !updated) {
+        const fileMeta = globalFilesCache.find(f => f.id === currentFileId);
+        if (fileMeta) {
+            created = created || fileMeta.createdAt;
+            updated = updated || fileMeta.updatedAt;
+        }
+    }
+
+    if (metaCreated && created) metaCreated.innerText = created;
+    if (metaUpdated && updated) metaUpdated.innerText = updated;
+
+    if (metaTags) {
+        if (currentNoteTags.length === 0) {
+            metaTags.innerText = '无';
+        } else {
+            // 将 ID 映射回真实标签名称
+            const tagNames = currentNoteTags.map(id => {
+                const t = globalTagsCache.find(gt => gt.id === id);
+                return t ? t.name : id;
+            });
+            metaTags.innerText = tagNames.join(', ');
+        }
+    }
+}
+
 // 格式化时间工具
 const getFormattedTime = () => {
   const now = new Date()
@@ -124,6 +162,13 @@ export const getData = async () => {
       const content = await downloadAndDecrypt(currentFileId)
       if (content) {
         cloudDataCache = { ...cloudDataCache, ...content }
+        
+        // 🚨 核心修复：拉取数据后，立刻更新本地标签状态并刷新属性面板
+        const fileMeta = globalFilesCache.find(f => f.id === currentFileId)
+        if (fileMeta) {
+            currentNoteTags = fileMeta.tags || []
+            refreshMetaUI(fileMeta.createdAt, fileMeta.updatedAt)
+        }
       } else {
         console.warn('云端实体为空或解密失败，启用默认模板。')
       }
@@ -205,17 +250,15 @@ export const storeData = async (data) => {
     // 构建/更新上帝索引元数据
     const existingIndex = globalFilesCache.findIndex(f => f.id === currentFileId)
     let creationTime = updateTime
-    let currentTags = []
     
     if (existingIndex >= 0) {
         creationTime = globalFilesCache[existingIndex].createdAt || updateTime
-        currentTags = globalFilesCache[existingIndex].tags || []
     }
 
     const metaInfo = { 
       id: currentFileId, 
       title: titleStr, 
-      tags: currentTags, 
+      tags: currentNoteTags, // 🚨 核心修复：直接读取独立维护的内存状态
       createdAt: creationTime, 
       updatedAt: updateTime 
     }
@@ -234,6 +277,9 @@ export const storeData = async (data) => {
     
     // 🛡️ 盲化推流成功后，立刻更新本地内存的指纹快照，等待下一次比对
     lastCloudSavedFingerprint = currentFingerprint;
+
+    // 🚨 核心修复：盲化推流成功后，立刻使用新时间戳轰炸 UI
+    refreshMetaUI(creationTime, updateTime);
     
   } catch (error) {
     console.error('云端盲化推流遭遇底层拦截:', error)
@@ -354,7 +400,6 @@ setTimeout(() => {
     window.__isManualCloudSave = false; 
     
     if(window.showGeekToast) window.showGeekToast('✅ 手动安全同步完成')
-    if(typeof window.updateMetaInfoUI === 'function') window.updateMetaInfoUI()
   }
   document.getElementById('btn-main-save')?.addEventListener('click', triggerSave)
   document.getElementById('btn-more-save')?.addEventListener('click', triggerSave)
@@ -400,8 +445,7 @@ setTimeout(() => {
     const listContainer = document.getElementById('file-tag-list')
     listContainer.innerHTML = ''
 
-    const fileMeta = globalFilesCache.find(f => f.id === currentFileId)
-    const currentFileTags = fileMeta?.tags || []
+    const currentFileTags = currentNoteTags; // 🚨 渲染时，直接对照内存状态
 
     if (globalTagsCache.length === 0) {
         listContainer.innerHTML = '<div style="padding: 12px 16px; color: var(--text-muted); font-size: 13px;">暂无标签，请先在文件大厅新建。</div>'
@@ -434,20 +478,17 @@ setTimeout(() => {
         if (!currentFileId) return
         
         const checkboxes = document.querySelectorAll('.file-tag-checkbox:checked')
-        const selectedTagIds = Array.from(checkboxes).map(cb => cb.value)
+        
+        // 🚨 瞬间更新内存状态，并立刻体现到悬浮面板
+        currentNoteTags = Array.from(checkboxes).map(cb => cb.value)
+        refreshMetaUI()
 
-        const fileIndex = globalFilesCache.findIndex(f => f.id === currentFileId)
-        if (fileIndex >= 0) {
-          globalFilesCache[fileIndex].tags = selectedTagIds
-          
-          window.__isManualCloudSave = true;
-          // 🚨 核心修复：加上 await
-          await storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
-          window.__isManualCloudSave = false;
-          
-          if(window.showGeekToast) window.showGeekToast('🏷️ 标签已实时同步')
-          if(typeof window.updateMetaInfoUI === 'function') window.updateMetaInfoUI()
-        }
+        window.__isManualCloudSave = true;
+        // 🚨 核心修复：加上 await
+        await storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
+        window.__isManualCloudSave = false;
+        
+        if(window.showGeekToast) window.showGeekToast('🏷️ 标签已实时同步')
     }
   })
 
@@ -492,46 +533,5 @@ setTimeout(() => {
           }
       });
   }
-
-  // =========================================
-  // 🧠 属性信息面板 (Meta Info) 动态渲染神经元
-  // =========================================
-  window.updateMetaInfoUI = () => {
-      // 假设你在 HTML 中给这三个位置分别留了 id
-      // 比如 <span id="meta-created"></span>, <span id="meta-updated"></span>, <span id="meta-tags"></span>
-      const metaCreated = document.getElementById('meta-created');
-      const metaUpdated = document.getElementById('meta-updated');
-      const metaTags = document.getElementById('meta-tags'); 
-      
-      if (!currentFileId) {
-          if (metaCreated) metaCreated.innerText = '(未保存)';
-          if (metaUpdated) metaUpdated.innerText = '(未保存)';
-          if (metaTags) metaTags.innerText = '无';
-          return;
-      }
-      
-      const fileMeta = globalFilesCache.find(f => f.id === currentFileId);
-      if (fileMeta) {
-          if (metaCreated) metaCreated.innerText = fileMeta.createdAt || '未知';
-          if (metaUpdated) metaUpdated.innerText = fileMeta.updatedAt || '未知';
-          if (metaTags) {
-              if (!fileMeta.tags || fileMeta.tags.length === 0) {
-                  metaTags.innerText = '无';
-              } else {
-                  // 将晦涩的 tagId 还原为人话标签名
-                  const tagNames = fileMeta.tags.map(id => {
-                      const t = globalTagsCache.find(gt => gt.id === id);
-                      return t ? t.name : id;
-                  });
-                  metaTags.innerText = tagNames.join(', ');
-              }
-          }
-      }
-  };
-
-  // 绑定鼠标悬停/点击“属性信息”时，实时更新数据
-  document.getElementById('btn-more-meta')?.addEventListener('mouseenter', () => {
-       if(typeof window.updateMetaInfoUI === 'function') window.updateMetaInfoUI();
-  });
 
 }, 1000)
