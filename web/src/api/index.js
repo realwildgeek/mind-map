@@ -40,9 +40,14 @@ const getDataFingerprint = (data) => {
 
 // 🌐 【核心强注释】：维护云端多文件与全局索引状态
 let currentFileId = new URLSearchParams(window.location.search).get('id')
+const isForceNew = new URLSearchParams(window.location.search).get('new') === '1'
 
 // 🚀 极客智能路由分发中心 (Local Context Snapshot)
-if (!currentFileId) {
+if (isForceNew) {
+    // 0. 强行新建模式：清除记忆，静默抹除 URL 中的 new 标识，给一张纯净白板，不弹大厅
+    localStorage.removeItem('geek_last_opened_id')
+    window.history.replaceState(null, '', '/')
+} else if (!currentFileId) {
     const lastOpenedId = localStorage.getItem('geek_last_opened_id')
     if (lastOpenedId) {
         // 1. 存在历史快照，瞬间重定向恢复现场 (不留历史记录)
@@ -275,9 +280,17 @@ export const getLocalConfig = () => {
 let tagManagerInstance = null
 
 setTimeout(() => {
-  // 1. 绑定 [新建终端] (仅在更多菜单)
+  // 1. 绑定 [新建脑图] (加入未保存差异拦截机制)
   document.getElementById('btn-more-new')?.addEventListener('click', () => {
-    window.location.href = '/'
+    // 检查当前是否有未保存的内容
+    const currentFingerprint = getDataFingerprint(cloudDataCache);
+    if (currentFingerprint !== lastCloudSavedFingerprint) {
+      const confirmNew = confirm('当前脑图有未保存的修改，直接新建将丢失这些更改，是否继续？');
+      if (!confirmNew) return;
+    }
+    
+    // 🚨 核心修复：带上强制新建通行证 (?new=1)，打断路由的恢复记忆逻辑
+    window.location.href = '/?new=1'
   })
 
   // 2. 绑定 [文件大厅] (主干道 & 更多菜单双重绑定)
