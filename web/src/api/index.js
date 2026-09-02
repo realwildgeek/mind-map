@@ -344,11 +344,17 @@ setTimeout(() => {
     document.getElementById('fileBrowserModal').classList.remove('active')
   })
 
-  // 4. 绑定 [安全同步] (主干道 & 更多菜单双重绑定)
-  const triggerSave = () => {
+  // 4. 绑定 [安全同步] 
+  const triggerSave = async () => { // 👈 加上 async
     document.getElementById('geek-island').classList.remove('active')
-    storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
+    
+    window.__isManualCloudSave = true; 
+    // 🚨 核心修复：加上 await，强制等待推流完成再关锁，防止 Babel 异步吞锁
+    await storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
+    window.__isManualCloudSave = false; 
+    
     if(window.showGeekToast) window.showGeekToast('✅ 手动安全同步完成')
+    if(typeof window.updateMetaInfoUI === 'function') window.updateMetaInfoUI()
   }
   document.getElementById('btn-main-save')?.addEventListener('click', triggerSave)
   document.getElementById('btn-more-save')?.addEventListener('click', triggerSave)
@@ -422,12 +428,11 @@ setTimeout(() => {
     }
   })
 
-  // 9. 极客式“点选即存”同步联动 (抛弃保存按钮)
-  document.getElementById('file-tag-list')?.addEventListener('change', (e) => {
+  // 9. 极客式“点选即存”同步联动
+  document.getElementById('file-tag-list')?.addEventListener('change', async (e) => { // 👈 加上 async
     if (e.target.classList.contains('file-tag-checkbox')) {
         if (!currentFileId) return
         
-        // 瞬间抓取所有已勾选的框
         const checkboxes = document.querySelectorAll('.file-tag-checkbox:checked')
         const selectedTagIds = Array.from(checkboxes).map(cb => cb.value)
 
@@ -435,12 +440,12 @@ setTimeout(() => {
         if (fileIndex >= 0) {
           globalFilesCache[fileIndex].tags = selectedTagIds
           
-          // 触发盲化推流
-          storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
+          window.__isManualCloudSave = true;
+          // 🚨 核心修复：加上 await
+          await storeData(Vue.prototype.getCurrentData ? Vue.prototype.getCurrentData() : {})
+          window.__isManualCloudSave = false;
           
           if(window.showGeekToast) window.showGeekToast('🏷️ 标签已实时同步')
-          
-          // 瞬间刷新 ⓘ 面板里的胶囊，实现数据联动
           if(typeof window.updateMetaInfoUI === 'function') window.updateMetaInfoUI()
         }
     }
@@ -487,5 +492,46 @@ setTimeout(() => {
           }
       });
   }
+
+  // =========================================
+  // 🧠 属性信息面板 (Meta Info) 动态渲染神经元
+  // =========================================
+  window.updateMetaInfoUI = () => {
+      // 假设你在 HTML 中给这三个位置分别留了 id
+      // 比如 <span id="meta-created"></span>, <span id="meta-updated"></span>, <span id="meta-tags"></span>
+      const metaCreated = document.getElementById('meta-created');
+      const metaUpdated = document.getElementById('meta-updated');
+      const metaTags = document.getElementById('meta-tags'); 
+      
+      if (!currentFileId) {
+          if (metaCreated) metaCreated.innerText = '(未保存)';
+          if (metaUpdated) metaUpdated.innerText = '(未保存)';
+          if (metaTags) metaTags.innerText = '无';
+          return;
+      }
+      
+      const fileMeta = globalFilesCache.find(f => f.id === currentFileId);
+      if (fileMeta) {
+          if (metaCreated) metaCreated.innerText = fileMeta.createdAt || '未知';
+          if (metaUpdated) metaUpdated.innerText = fileMeta.updatedAt || '未知';
+          if (metaTags) {
+              if (!fileMeta.tags || fileMeta.tags.length === 0) {
+                  metaTags.innerText = '无';
+              } else {
+                  // 将晦涩的 tagId 还原为人话标签名
+                  const tagNames = fileMeta.tags.map(id => {
+                      const t = globalTagsCache.find(gt => gt.id === id);
+                      return t ? t.name : id;
+                  });
+                  metaTags.innerText = tagNames.join(', ');
+              }
+          }
+      }
+  };
+
+  // 绑定鼠标悬停/点击“属性信息”时，实时更新数据
+  document.getElementById('btn-more-meta')?.addEventListener('mouseenter', () => {
+       if(typeof window.updateMetaInfoUI === 'function') window.updateMetaInfoUI();
+  });
 
 }, 1000)
