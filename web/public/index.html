@@ -43,7 +43,7 @@
     <div id="geek-island" class="geek-island">
       <!-- 🔵 头部：总开关与反馈吐司 -->
       <div class="island-head">
-        <div id="island-toggle" class="island-icon-btn" title="展开/收起">☁️</div>
+        <div id="island-toggle" class="island-icon-btn" title="展开/收起">⬡</div>
         <div id="status-bar" class="island-toast-msg" style="position: absolute; left: 56px; top: 50%; transform: translateY(-50%) translateX(-10px);">✅ 系统就绪</div>
       </div>
       
@@ -99,7 +99,7 @@
       .island-icon-btn:hover { background: var(--bg-hover) !important; }
       
       #island-toggle { width: 44px; height: 44px; border-radius: 50%; font-size: 20px; background: var(--bg-panel); border: 1px solid var(--border-light); box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s; }
-      .geek-island.active #island-toggle { transform: rotate(135deg); color: var(--color-accent) !important; }
+      .geek-island.active #island-toggle { transform: rotate(360deg); color: var(--color-accent) !important; }
 
       .island-toast-msg { white-space: nowrap; background: var(--bg-panel); color: var(--color-accent); padding: 6px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--border-light); opacity: 0; transition: all 0.4s ease; pointer-events: none; z-index: 15; }
       .island-toast-msg.show { opacity: 1; transform: translateY(-50%) translateX(0) !important; }
