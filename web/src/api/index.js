@@ -540,14 +540,17 @@ setTimeout(() => {
   const viewAllBtn = document.getElementById('view-all-files');
   if (viewAllBtn) {
       viewAllBtn.addEventListener('click', (e) => {
-          // 剥夺所有标签的高亮状态
           document.querySelectorAll('.modal-sidebar .tag-item').forEach(el => el.classList.remove('active'));
-          // 点亮“全部文档”
           e.currentTarget.classList.add('active');
           
-          // 传回 'all' 标识符，重绘大厅
           if (typeof refreshHallUI === 'function') {
               refreshHallUI('all');
+          }
+
+          // 🚨 核心修复：补回移动端展开/折叠标签栏的触控逻辑
+          const sidebar = e.currentTarget.closest('.modal-sidebar');
+          if (sidebar) {
+              sidebar.classList.toggle('tags-collapsed');
           }
       });
   }
