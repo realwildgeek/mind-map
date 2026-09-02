@@ -313,6 +313,17 @@ setTimeout(() => {
 
   // 3. 渲染大厅的核心逻辑
   function refreshHallUI(activeTagId = 'all') {
+    // 🚨 新增：遍历文件缓存，盘点所有正在使用的标签，并同步给侧边栏引擎
+    if (tagManagerInstance && typeof tagManagerInstance.setUsedTags === 'function') {
+        const usedTags = new Set();
+        globalFilesCache.forEach(f => {
+            if (f.tags && Array.isArray(f.tags)) {
+                f.tags.forEach(id => usedTags.add(id));
+            }
+        });
+        tagManagerInstance.setUsedTags(usedTags);
+    }
+    
     renderFileHallUI(
       globalFilesCache, 
       globalTagsCache, 
