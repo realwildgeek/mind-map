@@ -153,7 +153,3 @@
     .modal-sidebar.tags-collapsed #view-all-files::after { transform: rotate(-90deg) !important; }
     .modal-sidebar.tags-collapsed > div:nth-child(n+2) { display: none !important; }
 }
-body {
-    /* 🚨 核心封杀令：彻底干掉移动端浏览器的下拉刷新与边界回弹 */
-    overscroll-behavior-y: none;
-}
