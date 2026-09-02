@@ -72,7 +72,7 @@ let globalTagsCache = []
 let currentNoteTags = []
 
 // 🧠 属性面板 UI 精准轰炸函数 (完美适配 Grid 与胶囊 UI)
-const refreshMetaUI = (forceCreated, forceUpdated) => {
+window.updateMetaInfoUI = (forceCreated, forceUpdated) => {
     // 🚨 修正：精确瞄准你 HTML 里的真实 ID
     const metaCreated = document.getElementById('meta-created-time');
     const metaUpdated = document.getElementById('meta-updated-time');
@@ -185,7 +185,7 @@ export const getData = async () => {
         const fileMeta = globalFilesCache.find(f => f.id === currentFileId)
         if (fileMeta) {
             currentNoteTags = fileMeta.tags || []
-            refreshMetaUI(fileMeta.createdAt, fileMeta.updatedAt)
+            window.updateMetaInfoUI(fileMeta.createdAt, fileMeta.updatedAt)
         }
       } else {
         console.warn('云端实体为空或解密失败，启用默认模板。')
@@ -297,7 +297,7 @@ export const storeData = async (data) => {
     lastCloudSavedFingerprint = currentFingerprint;
 
     // 🚨 核心修复：盲化推流成功后，立刻使用新时间戳轰炸 UI
-    refreshMetaUI(creationTime, updateTime);
+    window.updateMetaInfoUI(creationTime, updateTime);
     
   } catch (error) {
     console.error('云端盲化推流遭遇底层拦截:', error)
@@ -499,7 +499,7 @@ setTimeout(() => {
         
         // 🚨 瞬间更新内存状态，并立刻体现到悬浮面板
         currentNoteTags = Array.from(checkboxes).map(cb => cb.value)
-        refreshMetaUI()
+        window.updateMetaInfoUI()
 
         window.__isManualCloudSave = true;
         // 🚨 核心修复：加上 await
