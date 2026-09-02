@@ -434,4 +434,47 @@ setTimeout(() => {
         }
     }
   })
+
+  // 10. 绑定 [大厅标签筛选] (DOM 事件委托模式)
+  const sidebarList = document.getElementById('tag-sidebar-list');
+  if (sidebarList) {
+      sidebarList.addEventListener('click', (e) => {
+          // 精准捕获点击的标签实体
+          const item = e.target.closest('.tag-item');
+          
+          // 排除掉对“编辑/删除”按钮的误触
+          if (item && !e.target.closest('.btn-edit-tag')) { 
+              // 剥夺所有标签和“全部文档”的高亮状态
+              document.querySelectorAll('.modal-sidebar .tag-item').forEach(el => el.classList.remove('active'));
+              const viewAllBtn = document.getElementById('view-all-files');
+              if (viewAllBtn) viewAllBtn.classList.remove('active');
+              
+              // 赋予当前点击项高亮状态
+              item.classList.add('active');
+              
+              // 提取数据集中的 ID，并触发大厅重绘
+              const tagId = item.dataset.id;
+              if (typeof refreshHallUI === 'function') {
+                  refreshHallUI(tagId);
+              }
+          }
+      });
+  }
+
+  // 11. 绑定 [查看全部文档] 恢复初始视图
+  const viewAllBtn = document.getElementById('view-all-files');
+  if (viewAllBtn) {
+      viewAllBtn.addEventListener('click', (e) => {
+          // 剥夺所有标签的高亮状态
+          document.querySelectorAll('.modal-sidebar .tag-item').forEach(el => el.classList.remove('active'));
+          // 点亮“全部文档”
+          e.currentTarget.classList.add('active');
+          
+          // 传回 'all' 标识符，重绘大厅
+          if (typeof refreshHallUI === 'function') {
+              refreshHallUI('all');
+          }
+      });
+  }
+
 }, 1000)
