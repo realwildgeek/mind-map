@@ -19,6 +19,25 @@ let mindMapData = null
 // 内存完整数据缓存，防止残缺覆盖
 let cloudDataCache = null
 
+// ==========================================
+// 🛡️ 极客防爆改装：数据指纹快照与提纯引擎
+// ==========================================
+let lastCloudSavedFingerprint = null 
+
+// 提取纯净数据的指纹（彻底剔除视图缩放、画布拖拽等无效噪音）
+const getDataFingerprint = (data) => {
+  if (!data) return '';
+  const pureData = {
+    root: data.root,       // 核心节点树
+    theme: data.theme,     // 主题配色
+    layout: data.layout,   // 结构布局
+    config: data.config    // 个性化配置
+  };
+  // 转为字符串作为极简版 Hash 指纹
+  return JSON.stringify(pureData);
+}
+// ==========================================
+
 // 🌐 【核心强注释】：维护云端多文件与全局索引状态
 let currentFileId = new URLSearchParams(window.location.search).get('id')
 
@@ -108,6 +127,9 @@ export const getData = async () => {
     console.error('云端数据引擎读取异常:', error)
   }
 
+  // 🛡️ 核心植入：初次加载完毕后，立刻拍下纯净数据的初始指纹
+  lastCloudSavedFingerprint = getDataFingerprint(cloudDataCache)
+
   return cloudDataCache
 }
 
@@ -145,6 +167,25 @@ export const storeData = async (data) => {
     } catch(e) {
       return // 没有驻留密钥，静默放弃云端保存
     }
+
+    // ==========================================
+    // 🛡️ 第一层防御：纯净数据指纹比对 (Diffing 拦截)
+    // ==========================================
+    const currentFingerprint = getDataFingerprint(originData);
+
+    // 1. 如果骨架内容毫无变化（仅仅是拖拽了画布），且不是手动强制保存，直接静默拦截！
+    if (currentFingerprint === lastCloudSavedFingerprint && !window.__isManualCloudSave) {
+        return; 
+    }
+
+    // 2. 智能探测空壳垃圾：如果是无 ID 的新文件，且内容连一个字都没改，坚决不自动推流！
+    if (!currentFileId && !window.__isManualCloudSave) {
+        const isDefaultEmpty = originData.root?.data?.text === '根节点' && (!originData.root?.children || originData.root.children.length === 0);
+        if (isDefaultEmpty) {
+            return; 
+        }
+    }
+    // ==========================================
 
     // 若为全新文档，则分配上帝 ID 并物理重写浏览器 URL
     if (!currentFileId) {
@@ -185,6 +226,9 @@ export const storeData = async (data) => {
 
     // 实施 R2 实体与 KV 目录的并发高强度加密推流
     await encryptAndUpload(currentFileId, originData, metaInfo, null, globalFilesCache)
+    
+    // 🛡️ 盲化推流成功后，立刻更新本地内存的指纹快照，等待下一次比对
+    lastCloudSavedFingerprint = currentFingerprint;
     
   } catch (error) {
     console.error('云端盲化推流遭遇底层拦截:', error)
