@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="<%= BASE_URL %>style.css">
     <!-- 拖拽功能 Polyfill -->
     <link rel="stylesheet" href="<%= BASE_URL %>default.css">
+    <link rel="manifest" href="/manifest.json">
     <script src="<%= BASE_URL %>index.min.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
@@ -348,6 +349,14 @@
         // 实例化页面
         window.initApp()
       }
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(err => console.log('PWA 引擎启动失败', err));
+        });
+      }
+
+      
+      
     </script>
   </body>
 </html>
