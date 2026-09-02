@@ -71,11 +71,12 @@ let globalTagsCache = []
 // 🚨 完美复刻 main.js：独立的当前脑图标签状态 
 let currentNoteTags = []
 
-// 🧠 属性面板 UI 精准轰炸函数
+// 🧠 属性面板 UI 精准轰炸函数 (完美适配 Grid 与胶囊 UI)
 const refreshMetaUI = (forceCreated, forceUpdated) => {
-    const metaCreated = document.getElementById('meta-created');
-    const metaUpdated = document.getElementById('meta-updated');
-    const metaTags = document.getElementById('meta-tags'); 
+    // 🚨 修正：精确瞄准你 HTML 里的真实 ID
+    const metaCreated = document.getElementById('meta-created-time');
+    const metaUpdated = document.getElementById('meta-updated-time');
+    const metaTagsContainer = document.getElementById('meta-tags-container'); 
 
     let created = forceCreated;
     let updated = forceUpdated;
@@ -92,16 +93,33 @@ const refreshMetaUI = (forceCreated, forceUpdated) => {
     if (metaCreated && created) metaCreated.innerText = created;
     if (metaUpdated && updated) metaUpdated.innerText = updated;
 
-    if (metaTags) {
+    // 动态生成彩色 Pill 胶囊标签
+    if (metaTagsContainer) {
+        metaTagsContainer.innerHTML = ''; // 先清空旧数据
+        
         if (currentNoteTags.length === 0) {
-            metaTags.innerText = '无';
+            metaTagsContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 13px;">无</span>';
         } else {
-            // 将 ID 映射回真实标签名称
-            const tagNames = currentNoteTags.map(id => {
+            currentNoteTags.forEach(id => {
                 const t = globalTagsCache.find(gt => gt.id === id);
-                return t ? t.name : id;
+                const tagName = t ? t.name : id;
+                const tagColor = t ? t.color : '#888'; // 默认极客灰
+                
+                // 动态构建胶囊 DOM
+                const pill = document.createElement('div');
+                pill.style.cssText = `
+                    display: inline-flex;
+                    align-items: center;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                    background: ${tagColor}20; /* 20%透明度背景 */
+                    color: ${tagColor};
+                    border: 1px solid ${tagColor}40;
+                `;
+                pill.innerText = tagName;
+                metaTagsContainer.appendChild(pill);
             });
-            metaTags.innerText = tagNames.join(', ');
         }
     }
 }
