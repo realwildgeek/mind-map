@@ -188,8 +188,10 @@
                   closeAllPopovers();
                   if (!isActive) targetPopover.classList.add('active');
                   
-                  // 若点击的是属性信息，实时更新时间
-                  if (btnId === 'btn-main-meta' && !isActive) updateMetaInfoUI();
+                  // 若点击的是属性信息，实时更新时间 (安全调用底层引擎方法)
+                  if (btnId === 'btn-main-meta' && !isActive) {
+                      if (typeof window.updateMetaInfoUI === 'function') window.updateMetaInfoUI();
+                  }
               });
           });
 
@@ -201,43 +203,7 @@
               document.getElementById(id)?.addEventListener('click', e => e.stopPropagation());
           });
 
-          // 4. 信息气泡更新逻辑
-          // 将更新 UI 的方法挂载到全局，供 api/index.js 调用
-          window.updateMetaInfoUI = function() {
-              if (typeof currentFileId !== 'undefined' && currentFileId) {
-                  if(typeof globalFilesCache !== 'undefined'){
-                      const meta = globalFilesCache.find(f => f.id === currentFileId);
-                      if (meta) {
-                          document.getElementById('meta-created-time').innerText = meta.createdAt || '-';
-                          document.getElementById('meta-updated-time').innerText = meta.updatedAt || '-';
-                          
-                          // 渲染精致的 Pill 胶囊标签
-                          const tagsContainer = document.getElementById('meta-tags-container');
-                          tagsContainer.innerHTML = '';
-                          const currentTags = meta.tags || [];
-                          if (currentTags.length > 0 && typeof globalTagsCache !== 'undefined') {
-                              currentTags.forEach(tagId => {
-                                  const tagObj = globalTagsCache.find(t => t.id === tagId);
-                                  if (tagObj) {
-                                      // 🚨 修复编译报错：改用纯字符串拼接，绕过 Webpack 模板引擎的误杀
-                                      tagsContainer.innerHTML += 
-                                          '<div class="island-tag-pill">' +
-                                              '<div style="width: 8px; height: 8px; border-radius: 50%; background: ' + tagObj.color + ';"></div>' +
-                                              tagObj.name +
-                                          '</div>';
-                                  }
-                              });
-                          } else {
-                              tagsContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">无</span>';
-                          }
-                          return;
-                      }
-                  }
-              }
-              document.getElementById('meta-created-time').innerText = '（未保存）';
-              document.getElementById('meta-updated-time').innerText = '（未保存）';
-              document.getElementById('meta-tags-container').innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">无</span>';
-          }
+          // 4. 废弃的死代码已物理拔除，UI 渲染逻辑由底层 api/index.js 全面接管
       })();
     </script>
 
