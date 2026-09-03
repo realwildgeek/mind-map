@@ -16,24 +16,33 @@
     <script src="<%= BASE_URL %>index.min.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            // 保留原有的拖拽支持
             MobileDragDrop.polyfill({ holdToDrag: 300 }); 
             
-            // 🚨 根除方案：拦截并击毙系统级下拉刷新手势 (RCA Fix)
+            // 🚨 真正的工业级防下拉方案：动态滚动探测 (不再依赖任何白名单 ID)
             document.addEventListener('touchmove', function(e) {
-                // 智能放行：如果手指滑动的区域是文件大厅列表、下拉气泡等【需要原生滚动】的区域，则不拦截
-                if (e.target.closest('#file-tag-list') || 
-                    e.target.closest('#tag-sidebar-list') || 
-                    e.target.closest('.file-grid')) {
-                    return; // 放行正常滚动
+                let el = e.target;
+                let isScrollable = false;
+                
+                // 顺藤摸瓜：从手指点中的元素一直往上找，直到 body
+                while (el && el !== document.body && el !== document.documentElement) {
+                    // 探测 1：该元素的 CSS 是否允许滚动？
+                    const style = window.getComputedStyle(el);
+                    if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                        // 探测 2：该元素的实际内容是否超过了可视高度？(真的有滚动条出现)
+                        if (el.scrollHeight > el.clientHeight) {
+                            isScrollable = true;
+                            break; 
+                        }
+                    }
+                    el = el.parentNode;
                 }
                 
-                // 核心镇压：只要不是在允许滚动的区域，一律禁止浏览器的原生拖动/刷新行为
-                e.preventDefault(); 
-            }, { 
-                // 必须设置为 false，否则浏览器为了性能会忽略 e.preventDefault()
-                passive: false 
-            });
+                // 如果手指摸到的整条链路上，压根没有任何可以滚动的东西
+                // 那么这大概率是在拖拽画布，或者是误触导致下拉刷新，直接拦截！
+                if (!isScrollable) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
         });
     </script>
     <script>
