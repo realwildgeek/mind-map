@@ -47,7 +47,7 @@ export async function onRequest(context) {
         }
 
         // 📝 路由: R2 实体专线 (只管文件本体，不管 KV 目录)
-        if (path.startsWith('files/')) {
+        if (path.startsWith('file/')) {
             const fileId = path.split('/').pop(); 
             if (method === 'GET') {
                 const object = await env.R2_STORE.get(fileId); 
